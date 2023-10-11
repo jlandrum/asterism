@@ -17,11 +17,13 @@ export async function buildBlocks() {
       .filter(file => file.isDirectory())
       .map(folder => folder.name);
 
-    folders.forEach((folder) => {
+    folders.forEach(async (folder) => {
       const blockData = require(path.resolve(`./blocks/${folder}/block.json`));
 
       log(chalk.gray(`Building block: ${blockData.title} (${blockData.name})`));
-      Bun.spawn(['bunx', 'wp-scripts', 'build', `--webpack-src-dir=./blocks/${folder}`, `--output-path=${getThemeDestination()}/blocks/${folder}`]);
+      await Bun.spawn(
+        ['bunx', 'wp-scripts', 'build', `--webpack-src-dir=./blocks/${folder}`, `--output-path=${getThemeDestination()}/blocks/${folder}`],
+      ).exited;
     });
 
   } catch (err) {
