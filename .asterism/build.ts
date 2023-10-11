@@ -48,32 +48,36 @@ if (args.watch) {
 
   if (theme.isBlockOnly) {
     log(chalk.bgYellow('Running in Block-Only mode.'));
-  } else {
-    const watcher = watch(
-      path.resolve(`${import.meta.dir}/..`),
-      { recursive: true },
-      (event, filename) => {
-        if (!filename) return;
+  } 
 
+  const watcher = watch(
+    path.resolve(`${import.meta.dir}/..`),
+    { recursive: true },
+    (event, filename) => {
+      if (!filename) return;
+
+      if (!theme.isBlockOnly) {
+        
         // Don't process asterism files
         if (filename.startsWith('.asterism')) {
           return;
         }
-
+        
         if (filename.startsWith('theme')) {
           copyThemeFiles();
-        }
-
-        if (filename.startsWith('blocks')) {
-          buildFunctionsPhp();
         }
 
         if (/(s|sc|sa)ss/g.test(filename)) {
           writeThemeStylesheet();
         }
-      },
-    );
-  }
+      } 
+        
+      if (filename.startsWith('blocks')) {
+        buildFunctionsPhp();
+      }
+    },
+  );
+  
 } else {
   build();
 }

@@ -9,5 +9,8 @@
     "uri": "https://jameslandrum.com",
     "license": "None",
     "licenseUri": "None"
+  },
+  "advanced": {
+    "mode": "blockOnly"
   }
 }

@@ -1,10 +1,11 @@
 import path from 'path';
 
 import { copySync, readdirSync } from "fs-extra";
-import { getThemeDestination, writeThemeFile } from "./asterism";
+import { getTheme, getThemeDestination, writeThemeFile } from "./asterism";
 import chalk from 'chalk';
 
 const { log, error } = console;
+const theme = getTheme();
 
 /**
  * Copies theme files, as well as handles special cases.
@@ -31,8 +32,19 @@ export async function copyThemeFiles() {
 }
 
 export async function buildFunctionsPhp() {
-  var functionsPhp = await Bun.file('./theme/functions.php').text();
-  functionsPhp += "\n\nadd_action('init', function() {";
+  var functionsPhp = buildBlocksPhp();
+  
+  if (theme.isBlockOnly) {
+    functionsPhp = '<?php\n\n' + functionsPhp;
+    return writeThemeFile('blocks.php', functionsPhp);
+  } else {
+    functionsPhp = await Bun.file('./theme/functions.php').text() + functionsPhp;  
+    return writeThemeFile('functions.php', functionsPhp);
+  }
+}
+
+function buildBlocksPhp(): string {
+  var functionsPhp = "\n\nadd_action('init', function() {";
   try {
     const folders = readdirSync('./blocks', { withFileTypes: true })
       .filter(file => file.isDirectory())
@@ -46,6 +58,5 @@ export async function buildFunctionsPhp() {
   } catch (err) {
     error(chalk.bold('Failed to build: ', err));
   }
-
-  writeThemeFile('functions.php', functionsPhp);
+  return functionsPhp;
 }
