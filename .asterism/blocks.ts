@@ -1,6 +1,6 @@
 import chalk from "chalk";
 
-import { readdirSync } from "fs-extra";
+import { mkdirsSync, readdirSync } from "fs-extra";
 import { getThemeDestination, writeThemeFile } from "./asterism";
 import path from 'path';
 import { buildFunctionsPhp } from "./files";
@@ -19,6 +19,7 @@ export async function buildBlocks(hot: boolean) {
   }
 
   try {
+    mkdirsSync(`${getThemeDestination()}/blocks/`);
     await Bun.spawn(
       ['bunx', 'wp-scripts', hot ? 'start' : 'build', `--webpack-src-dir=./blocks/`, `--output-path=${getThemeDestination()}/blocks/`, hot ? '--hot' : ''],
     ).exited;
