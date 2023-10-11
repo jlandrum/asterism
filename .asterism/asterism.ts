@@ -6,7 +6,10 @@ import path from 'node:path';
  * Gets the current theme configuration
  * @returns The Theme Data for the current theme
  */
-export const getTheme = () => _theme as ThemeData;
+export const getTheme = () => ({
+  ...(_theme as ThemeData),
+  isBlockOnly: (_theme as ThemeData)?.advanced?.mode === 'blockOnly',
+}) as Theme;
 
 /**
  * Gets the current path for the theme relative to the asterism build tools
