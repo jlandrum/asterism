@@ -31,6 +31,5 @@ export const getThemeFileDestination = (file: string) => path.resolve(`../wp-con
  */
 export async function writeThemeFile(file: string, data: string) {
   mkdirsSync(path.dirname(file));
-  mkdirsSync(getThemeFileDestination(file));
   return Bun.write(getThemeFileDestination(file), data);
 }
