@@ -6,7 +6,7 @@ import chalk from 'chalk';
 import path from 'path';
 import { watch } from 'fs-extra';
 import { buildBlocks } from './blocks';
-import { copyThemeFiles } from './files';
+import { buildFunctionsPhp, copyThemeFiles } from './files';
 import { writeThemeStylesheet } from './styles';
 import { getTheme } from './asterism';
 
@@ -24,7 +24,7 @@ async function build() {
   try {
     await writeThemeStylesheet();    
     await copyThemeFiles();
-    await buildBlocks();
+    await buildBlocks(false);
     log(chalk.bold.greenBright(`Theme ${theme.name} build successfully!`));
   } catch (e) {
     error(chalk.bold.redBright(`Theme ${theme.name} failed to build: ${e}`));
@@ -37,6 +37,7 @@ log(chalk.bold.cyanBright(`Asterism ${pkg.version}`));
 
 if (args.watch) {
   log(chalk.cyanBright('Watching for changes'));  
+  buildBlocks(true);
   const watcher = watch(
     path.resolve(`${import.meta.dir}/..`),
     { recursive: true },
@@ -53,7 +54,7 @@ if (args.watch) {
       }
       
       if (filename.startsWith('blocks')) {
-        buildBlocks();
+        buildFunctionsPhp();
       }      
       
       if (/(s|sc|sa)ss/g.test(filename)) {

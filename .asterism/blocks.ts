@@ -11,21 +11,17 @@ const { log, error } = console;
  * Builds the blocks for the project and installs them into the theme, updating
  * the functions.php file as well
  */
-export async function buildBlocks() {
+export async function buildBlocks(hot: boolean) {
+  if (hot) {
+    log(chalk.bold('Block Hotloading Enabled -- make sure you have added:'));
+    log(chalk.bold("  define('SCRIPT_DEBUG', true);"));
+    log(chalk.bold('to your wordpress config, or your blocks will not load at all.'));
+  }
+
   try {
-    const folders = readdirSync('./blocks', { withFileTypes: true })
-      .filter(file => file.isDirectory())
-      .map(folder => folder.name);
-
-    folders.forEach(async (folder) => {
-      const blockData = require(path.resolve(`./blocks/${folder}/block.json`));
-
-      log(chalk.gray(`Building block: ${blockData.title} (${blockData.name})`));
-      await Bun.spawn(
-        ['bunx', 'wp-scripts', 'build', `--webpack-src-dir=./blocks/${folder}`, `--output-path=${getThemeDestination()}/blocks/${folder}`],
-      ).exited;
-    });
-
+    await Bun.spawn(
+      ['bunx', 'wp-scripts', hot ? 'start' : 'build', `--webpack-src-dir=./blocks/`, `--output-path=${getThemeDestination()}/blocks/`, hot ? '--hot' : ''],
+    ).exited;
   } catch (err) {
     error(chalk.bold('Failed to build: ', err));
   }
