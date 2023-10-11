@@ -1,0 +1,33 @@
+{
+  "name": "asterism",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "blocks:create": "bun ./.asterism/create-block.ts",
+    "build": "bun ./.asterism/build.ts",
+    "build:watch": "bun ./.asterism/build.ts -w",
+    "test": "wp-scripts build"
+  },
+  "types": "types.d.ts",
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@types/chalk-animation": "^1.6.1",
+    "@types/fs-extra": "^11.0.2",
+    "@wordpress/scripts": "^26.14.0",
+    "babelify": "^10.0.0",
+    "browserify": "^17.0.0",
+    "chalk": "^5.3.0",
+    "chalk-animation": "^2.0.3",
+    "concat-stream": "^2.0.0",
+    "esmify": "^2.1.1",
+    "fs-extra": "^11.1.1",
+    "minimist": "^1.2.8",
+    "sass": "^1.69.2",
+    "sassify": "^4.0.1"
+  }
+}
