@@ -5,8 +5,7 @@
   "scripts": {
     "blocks:create": "bun ./.asterism/create-block.ts",
     "build": "bun ./.asterism/build.ts",
-    "build:watch": "bun ./.asterism/build.ts -w",
-    "test": "wp-scripts build"
+    "build:watch": "bun ./.asterism/build.ts -w"
   },
   "types": "types.d.ts",
   "devDependencies": {
