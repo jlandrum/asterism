@@ -5,7 +5,6 @@ import { getTheme, getThemeDestination, writeThemeFile } from "./asterism";
 import chalk from 'chalk';
 
 const { log, error } = console;
-const theme = getTheme();
 
 /**
  * Copies theme files, as well as handles special cases.
@@ -32,6 +31,7 @@ export async function copyThemeFiles() {
 }
 
 export async function buildFunctionsPhp() {
+	const theme = getTheme();
 	var functionsPhp = buildBlocksPhp();
 
 	if (theme.isBlockOnly) {

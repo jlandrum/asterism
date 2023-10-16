@@ -3,12 +3,13 @@ import chalk from "chalk";
 import { mkdirsSync } from "fs-extra";
 import { getThemeDestination } from "./asterism";
 import { buildFunctionsPhp } from "./files";
+import { sync as resolveBin } from 'resolve-bin';
 
 const { log, error } = console;
 
 function watchBlock(name: string) {
 	const proc = Bun.spawn(
-		['bunx', 'wp-scripts', 'start', '--hot', `--webpack-src-dir=blocks/${name}`, `--output-path=${getThemeDestination()}/blocks/${name}`],
+		[resolveBin('@wordpress/scripts', { executable: 'wp-scripts' }), 'start', '--hot', `--webpack-src-dir=blocks/${name}`, `--output-path=${getThemeDestination()}/blocks/${name}`],
 	);
 	process.on('exit', (code) => {
 		proc.kill();
@@ -18,7 +19,7 @@ function watchBlock(name: string) {
 
 function watchAllBlocks() {
 	const proc = Bun.spawn(
-		['bunx', 'wp-scripts', 'start', '--hot', `--webpack-src-dir=blocks`, `--output-path=${getThemeDestination()}/blocks/`],
+		[resolveBin('@wordpress/scripts', { executable: 'wp-scripts' }), 'start', '--hot', `--webpack-src-dir=blocks`, `--output-path=${getThemeDestination()}/blocks/`],
 	);
 	process.on('exit', (code) => {
 		proc.kill();
@@ -28,7 +29,7 @@ function watchAllBlocks() {
 
 function buildAllBlocks() {
 	const proc = Bun.spawn(
-		['bunx', 'wp-scripts', 'build', `--webpack-src-dir=blocks`, `--output-path=${getThemeDestination()}/blocks/`],
+		[resolveBin('@wordpress/scripts', { executable: 'wp-scripts' }), 'build', `--webpack-src-dir=blocks`, `--output-path=${getThemeDestination()}/blocks/`],
 	);
 	process.on('exit', (code) => {
 		proc.kill();

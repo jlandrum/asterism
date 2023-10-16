@@ -1,15 +1,29 @@
-import { mkdirsSync } from 'fs-extra';
-import _theme from '../theme.json';
+import { mkdirsSync, readFileSync } from 'fs-extra';
 import path from 'node:path';
+import { findFile } from './utils';
 
+let themeObj: Theme | undefined = undefined;
 /**
  * Gets the current theme configuration
  * @returns The Theme Data for the current theme
  */
-export const getTheme = () => ({
-  ...(_theme as ThemeData),
-  isBlockOnly: (_theme as ThemeData)?.advanced?.mode === 'blockOnly',
-}) as Theme;
+export function getTheme() {
+	if (themeObj) return themeObj;
+	const themeFile = findFile('theme.json');
+
+	if (themeFile) {
+		const _theme = JSON.parse(readFileSync(themeFile).toString('utf-8'));
+
+		themeObj = {
+			...(_theme as ThemeData),
+			isBlockOnly: (_theme as ThemeData)?.advanced?.mode === 'blockOnly',
+		};
+
+		return themeObj;
+	}
+
+	throw new Error('A theme.json file must exist in the current directory.');
+}
 
 /**
  * Gets the current path for the theme relative to the asterism build tools

@@ -1,16 +1,43 @@
 # Asterism
 The Rapid Development Wordpress Toolkit
 
+You can install it globally (recommended), or you can install it into your project.
+
+To install it globally, run `bun install -g wpasterism` - bun is required.
+
+
+## Usage:
+```
+Asterism 0.0.5
+Usage: asterism [options] [command]
+
+Options:
+  -h, --help                             display help for command
+
+Commands:
+  build                                  Builds the current theme and copies it to the WordPress themes folder
+  watch [block]                          Watches the current theme for changes and rebuilds it
+  init                                   Initializes a new theme
+  create-block [options] <title> <slug>  Creates a new block
+  help [command]                         display help for command
+```
+
 ## Folders
 
 ### blocks
-Blocks go here. To create a block, run `bun run create-block`
+Blocks go here. To create a block, run `asterism create-block`
 
 ### theme
 Classic Wordpress theme assets go here. functions.php is special in that Asterism will
-append additional content to the end of your functions.php
-## Advanced Usage
+append additional content to the end of your functions.php; other files will simply be copied.
 
+### css
+Stylesheets will be built from here and put inside style.css.
+
+### js
+TODO: Not yet implemented
+
+## Advanced Usage
 ## Block-Only Mode
 If `mode` is set to `blockOnly` under `advanced` in your `theme.json`, various things will happen:
 

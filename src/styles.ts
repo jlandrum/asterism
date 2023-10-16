@@ -7,8 +7,8 @@ const { log } = console;
 /**
  * Generates the theme's style.css file header
  */
-export function generateThemeHeader(): string {
-  const theme = getTheme();
+export async function generateThemeHeader(): Promise<string> {
+	const theme = getTheme();
 
   const themeDetails = {
     'Theme Name': theme.name,
@@ -40,6 +40,10 @@ ${Object.keys(themeDetails).map(key => `${key}: ${themeDetails[key]}`).join('\n'
  * @returns 
  */
 export async function buildCss(): Promise<string> {
+	const themeFile = Bun.file('./css/theme.scss');
+	if (!(await themeFile.exists())) {
+		throw Error('./css/theme.scss does not exist. Create it or run `asterism init` to create a new theme.')
+	}
   const styles = scss.compile('./css/theme.scss', { style: "compressed" });
   return styles.css;
 }
@@ -48,7 +52,7 @@ export async function buildCss(): Promise<string> {
  * Writes the theme's stylesheet
  */
 export async function writeThemeStylesheet() {
-  const header = generateThemeHeader();
+  const header = await generateThemeHeader();
   const styles = await buildCss();
 
   log(chalk.bold('Stylesheet successfully built.'));

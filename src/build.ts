@@ -1,30 +1,24 @@
-import pkg from '../package.json';
-import _theme from '../theme.json';
 import minimist from 'minimist';
 import chalk from 'chalk';
 
 import path from 'path';
-import { watch } from 'fs-extra';
+import { watch as fsWatch, mkdirsSync } from 'fs-extra';
 import { buildBlocks } from './blocks';
 import { buildFunctionsPhp, copyThemeFiles } from './files';
 import { writeThemeStylesheet } from './styles';
-import { getTheme } from './asterism';
+import { getTheme, getThemeDestination } from './asterism';
 
 const { log, error } = console;
-const theme = getTheme();
 
-const args = minimist(process.argv.slice(2), {
-	alias: {
-		"w": "watch"
-	},
-	string: ['watch'],
-});
-
-async function build() {
+export async function build() {
 	log(chalk.bold('Starting full build...'));
+	const theme = getTheme();
+
 	if (theme.isBlockOnly) {
-		log(chalk.bgYellow('Running in Block-Only mode.'));
+		log(chalk.yellow('Running in block only mode.'));
 	}
+
+	mkdirsSync(getThemeDestination());
 
 	try {
 		if (!theme.isBlockOnly) {
@@ -40,36 +34,32 @@ async function build() {
 	return true;
 }
 
-log(chalk.bold.cyanBright(`Asterism ${pkg.version}`));
-
-if (args?.watch?.length === 0) {
-	error(chalk.redBright(`When using watch mode, a single block slug must be provided due to known issues with HMR.`));
-	process.exit(0);
-}
-
-if (args.watch) {
-	log(chalk.cyanBright(`Watching block ${args.watch}`));
-	log(chalk.cyanBright('Watching for changes'));
-
-	buildBlocks({ hot: true, singleBlock: args.watch });
-
-	if (theme.isBlockOnly) {
-		log(chalk.bgYellow('Running in Block-Only mode.'));
+export async function watch(block: string) {
+	const theme = getTheme();
+	if (block) {
+		log(chalk.cyanBright(`Watching block ${block}`));
+		buildBlocks({ hot: true, singleBlock: block });
+	} else {
+		if (theme.isBlockOnly) {
+			error(chalk.bold.red('A block must be provided in block only mode, or this will have no effect.'));
+			process.exit(1);
+		} else {
+			log(chalk.cyanBright('Watching for changes'));
+		}
 	}
 
-	const watcher = watch(
+
+	if (theme.isBlockOnly) {
+		log(chalk.yellow('Running in block only mode.'));
+	}
+
+	const watcher = fsWatch(
 		path.resolve(`${import.meta.dir}/..`),
 		{ recursive: true },
 		(event, filename) => {
 			if (!filename) return;
 
 			if (!theme.isBlockOnly) {
-
-				// Don't process asterism files
-				if (filename.startsWith('.asterism')) {
-					return;
-				}
-
 				if (filename.startsWith('theme')) {
 					copyThemeFiles();
 				}
@@ -84,7 +74,4 @@ if (args.watch) {
 			}
 		},
 	);
-
-} else {
-	build();
 }

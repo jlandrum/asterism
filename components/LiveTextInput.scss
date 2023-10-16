@@ -1,0 +1,26 @@
+.live-text-input {
+	position: relative;
+	&>textarea, &::after {
+		grid-area: 1 / 1 / 2 / 2;
+	}
+	.pre {
+		white-space: pre-wrap;
+		opacity: 0;
+		display: block;
+		min-height: 20px;
+	}
+	textarea {
+		position: absolute;
+		inset: 0;
+		border: 1px dashed #ddd;
+		background-color: transparent;
+		box-sizing: border-box;
+		display: inline-block;
+		resize: none;
+		height: calc(100%);
+		overflow: hidden;
+		&:focus {
+			border: 1px solid transparent;
+		}	
+	}
+}
