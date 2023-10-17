@@ -49,12 +49,29 @@ export async function buildCss(): Promise<string> {
 }
 
 /**
+ * Generates the theme's CSS as a string
+ * @returns 
+ */
+export async function buildEditorCss(): Promise<string|undefined> {
+	const themeFile = Bun.file('./css/style-editor.scss');
+	if (!(await themeFile.exists())) {
+		return undefined;
+	}
+  const styles = scss.compile('./css/style-editor.scss', { style: "compressed" });
+  return styles.css;
+}
+
+/**
  * Writes the theme's stylesheet
  */
 export async function writeThemeStylesheet() {
   const header = await generateThemeHeader();
   const styles = await buildCss();
+	const editorStyles = await buildEditorCss();
 
   log(chalk.bold('Stylesheet successfully built.'));
+	if (editorStyles) {	
+		await writeThemeFile('style-editor.css', editorStyles);
+	}
   await writeThemeFile('style.css', `${header}\n\n${styles}`);
 }

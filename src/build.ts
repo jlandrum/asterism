@@ -48,7 +48,6 @@ export async function watch(block: string) {
 		}
 	}
 
-
 	if (theme.isBlockOnly) {
 		log(chalk.yellow('Running in block only mode.'));
 	}
@@ -58,6 +57,8 @@ export async function watch(block: string) {
 		{ recursive: true },
 		(event, filename) => {
 			if (!filename) return;
+
+			if (filename.includes('/.')) return;
 
 			if (!theme.isBlockOnly) {
 				console.error(filename);

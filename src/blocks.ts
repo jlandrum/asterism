@@ -5,14 +5,19 @@ import { getThemeDestination } from "./asterism";
 import { buildFunctionsPhp } from "./files";
 import { sync as resolveBin } from 'resolve-bin';
 
-const { log, error } = console;
+const { log, warn, error } = console;
 
 function watchBlock(name: string) {
 	const proc = Bun.spawn(
 		[resolveBin('@wordpress/scripts', { executable: 'wp-scripts' }), 'start', '--hot', `--webpack-src-dir=blocks/${name}`, `--output-path=${getThemeDestination()}/blocks/${name}`],
 	);
-	process.on('exit', (code) => {
+	process.on('SIGINT', (code) => {
 		proc.kill();
+		proc.kill();
+		warn('Cleaned up processes');
+		buildAllBlocks().then(() => {
+			process.exit(0);
+		});	
 	});
 	return proc.exited;
 }
@@ -21,8 +26,13 @@ function watchAllBlocks() {
 	const proc = Bun.spawn(
 		[resolveBin('@wordpress/scripts', { executable: 'wp-scripts' }), 'start', '--hot', `--webpack-src-dir=blocks`, `--output-path=${getThemeDestination()}/blocks/`],
 	);
-	process.on('exit', (code) => {
+	process.on('SIGINT', (code) => {
 		proc.kill();
+		proc.kill();
+		warn('Cleaned up processes');
+		buildAllBlocks().then(() => {
+			process.exit(0);
+		});	
 	});
 	return proc.exited;
 }
@@ -31,9 +41,6 @@ function buildAllBlocks() {
 	const proc = Bun.spawn(
 		[resolveBin('@wordpress/scripts', { executable: 'wp-scripts' }), 'build', `--webpack-src-dir=blocks`, `--output-path=${getThemeDestination()}/blocks/`],
 	);
-	process.on('exit', (code) => {
-		proc.kill();
-	});
 	return proc.exited;
 }
 

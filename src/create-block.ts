@@ -11,6 +11,12 @@ interface BlockCreateOptions {
 	type: 'dynamic' | 'static';
 }
 
+function replaceTokens(tokens: any, text: string) {
+	return Object.keys(tokens).reduce((p,c) => {
+		return p.replaceAll(`$$${c}$$`, tokens[c] as string);
+	}, text);
+}
+
 export async function createBlock(title: string, slug: string, options: BlockCreateOptions) {
 	const templatePath = `${__dirname}/templates/blocks/${options.type}`;
 	const outPath = `./blocks/${slug}/`;
@@ -38,14 +44,14 @@ export async function createBlock(title: string, slug: string, options: BlockCre
 		category: options.category || 'widgets',
 		textdomain: theme.textDomain,
 		title,
+		component: title.replace(/[\s_-]/g, ''),
 	} as any;
 
 	for (const file of files) {
 		const fileText = await Bun.file(`${templatePath}/${file}`).text();
-		const updated = Object.keys(replacers).reduce((p,c) => {
-			return p.replaceAll(`$$${c}$$`, replacers[c] as string);
-		}, fileText);
+		const updated = replaceTokens(replacers, fileText);
 
-		Bun.write(Bun.file(`${outPath}/${file}`), updated);		
+		const replacedFile = replaceTokens(replacers, file);
+		Bun.write(Bun.file(`${outPath}/${replacedFile}`), updated);		
 	}
 }

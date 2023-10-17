@@ -1,7 +1,7 @@
 {
   "name": "wpasterism",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "types": "types.d.ts",
   "bin": {
     "asterism": "./index.ts"
@@ -18,6 +18,7 @@
     "@types/commander": "^2.12.2",
     "@types/fs-extra": "^11.0.2",
     "@types/resolve-bin": "^0.4.1",
+    "@types/wordpress__block-editor": "^11.5.5",
     "@wordpress/block-editor": "^12.11.1",
     "babelify": "^10.0.0",
     "browserify": "^17.0.0",
