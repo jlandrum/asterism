@@ -12,13 +12,13 @@ export async function generateThemeHeader(): Promise<string> {
 
   const themeDetails = {
     'Theme Name': theme.name,
-    'Theme URI': theme['style.css'].uri,
+    'Theme URI': theme?.['style.css']?.uri,
     'Author': theme.author,
-    'Author URI': theme['style.css'].authorUri,
+    'Author URI': theme?.['style.css']?.authorUri,
     'Description': theme.description,
     'Version': theme.version,
-    'License': theme['style.css'].license,
-    'License URI': theme['style.css'].licenseUri,
+    'License': theme?.['style.css']?.license,
+    'License URI': theme?.['style.css']?.licenseUri,
     'Text Domain': theme.textDomain || theme.namespace,
   } as { [key: string]: string }
 
