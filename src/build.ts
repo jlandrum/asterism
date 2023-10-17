@@ -54,12 +54,13 @@ export async function watch(block: string) {
 	}
 
 	const watcher = fsWatch(
-		path.resolve(`${import.meta.dir}/..`),
+		path.resolve(`./`),
 		{ recursive: true },
 		(event, filename) => {
 			if (!filename) return;
 
 			if (!theme.isBlockOnly) {
+				console.error(filename);
 				if (filename.startsWith('theme')) {
 					copyThemeFiles();
 				}
