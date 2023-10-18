@@ -4,12 +4,16 @@ import { useState } from "@wordpress/element";
 
 import './LiveTextInput.scss';
 import { useSwiftState } from './SwiftState';
+import { URLInput, URLInputButton } from '@wordpress/block-editor';
 
 interface LiveTextInputProps {
 	value?: string;
-	className: string;
-  onChange: (string) => void;
+	link?: string;
+	className?: string;
+  onChange: (string: string) => void;
+  onLinkChange?: (url: string) => void;
 	children: any;
+	withLink?: boolean;
 } 
 
 /**
@@ -18,9 +22,12 @@ interface LiveTextInputProps {
  */
 const LiveTextInput = ({
   value,
+	link,
   className,
   children,
   onChange,
+	onLinkChange,
+	withLink,
 }: LiveTextInputProps): React.Element => {
 	const save = useSwiftState();
 	
@@ -29,14 +36,15 @@ const LiveTextInput = ({
   } else {
 		return (
       <div className="live-text-input">
-				<span className={`pre ${className}`}>
-					{value}
-				</span>
+        <span className={`pre ${className}`}>{value}</span>
         <textarea
           className={`${className}`}
           value={value}
-          onChange={(e) => onChange(e.currentTarget.value)}
+          onChange={(e) => onChange(e.currentTarget.value)} 
         />
+        {withLink && (
+					<URLInput value={link || ""} onChange={(url) => onLinkChange?.(url)} />
+        )}
       </div>
     );
 	}

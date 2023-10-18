@@ -6,6 +6,8 @@ interface ThemeData {
 	description?: string;
 	version?: string;
 	textDomain: string;
+	/** Overrides the output folder name of the theme */
+	themeFolder?: string;
 	"style.css": {
 		uri?: string;
 		authorUri?: string;

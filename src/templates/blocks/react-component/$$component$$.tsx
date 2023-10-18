@@ -1,23 +1,19 @@
-import {
-  useBlockProps,
-} from "@wordpress/block-editor";
+import React from "react";
+
+import { useBlockProps } from "@wordpress/block-editor";
 
 interface $$component$$Props {
-	blockProps: ReturnType<typeof useBlockProps | typeof useBlockProps.save>;
-	attributes: any;
-	setAttributes?: (data: any) => void;
+  blockProps: ReturnType<typeof useBlockProps | typeof useBlockProps.save>;
+  attributes: any;
+  setAttributes?: (data: any) => void;
 }
 
 const $$component$$ = ({
-	blockProps,
-	attributes,
-	setAttributes,
+  blockProps,
+  attributes,
+  setAttributes,
 }: $$component$$Props) => {
-	return (
-		<div {...blockProps}>
-			Hello World!
-		</div>
-	);
+  return <div {...blockProps}>Hello World!</div>;
 };
 
-export default $$component$$
+export default $$component$$;

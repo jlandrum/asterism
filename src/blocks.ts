@@ -40,7 +40,9 @@ function watchAllBlocks() {
 function buildAllBlocks() {
 	const proc = Bun.spawn(
 		[resolveBin('@wordpress/scripts', { executable: 'wp-scripts' }), 'build', `--webpack-src-dir=blocks`, `--output-path=${getThemeDestination()}/blocks/`],
+		{ stdout: 'inherit', stderr: 'inherit' }
 	);
+
 	return proc.exited;
 }
 

@@ -1,15 +1,15 @@
-import React, { createContext, useContext } from "@wordpress/element";
+import React from "react";
 
 const state = {
 	save: false
 }
 
-export const SaveOnly = ({ children }): React.Element => {
+export const SaveOnly = ({ children }) => {
   if (state.save) return children;
   return <></>;
 };
 
-export const EditOnly = ({ children }): React.Element => {
+export const EditOnly = ({ children }) => {
   if (!state.save) return children;
   return <></>;
 };
