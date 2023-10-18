@@ -3,6 +3,8 @@ import path from 'path';
 import { copySync, readdirSync } from "fs-extra";
 import { getTheme, getThemeDestination, writeThemeFile } from "./asterism";
 import chalk from 'chalk';
+import { blockGutenbergOnClient, generateAllowBlocks, generateOmitBlocks } from './addons/block-control';
+import { getThemeBlocks } from './blocks';
 
 const { log, error } = console;
 
@@ -33,6 +35,18 @@ export async function copyThemeFiles() {
 export async function buildFunctionsPhp() {
 	const theme = getTheme();
 	var functionsPhp = buildBlocksPhp();
+
+	if (theme.allow) {
+		functionsPhp += `\n${generateAllowBlocks([...theme.allow, ...getThemeBlocks()])}`;
+	}
+
+	if (theme.exclude) {
+		functionsPhp += `\n${generateOmitBlocks([...theme.exclude, ...getThemeBlocks()])}`;
+	}
+
+	if (theme.advanced?.noGutenbergFrontend) {
+		functionsPhp += `\n${blockGutenbergOnClient()}`;
+	}
 
 	if (theme.isBlockOnly) {
 		functionsPhp = '<?php\n' + functionsPhp;

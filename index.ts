@@ -8,6 +8,7 @@ import { Option, program } from 'commander';
 import { build, watch } from './src/build';
 import { initTheme } from './src/init';
 import { createBlock } from './src/create-block';
+import { getThemeBlocks } from './src/blocks';
 
 const { log, error } = console;
 
@@ -47,6 +48,12 @@ program.command('create-block')
 					createBlock(name, slug, options)
 			 });
 
+program.command('list-blocks')
+			 .description('Lists all blocks in the current theme')
+			 .action(async () => {
+					log(getThemeBlocks());
+			 });
+			 
 program.parse();
 
 const options = program.opts();

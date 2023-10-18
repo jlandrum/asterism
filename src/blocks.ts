@@ -1,6 +1,6 @@
 import chalk from "chalk";
 
-import { mkdirsSync } from "fs-extra";
+import { mkdirsSync, readFileSync, readdirSync } from "fs-extra";
 import { getThemeDestination } from "./asterism";
 import { buildFunctionsPhp } from "./files";
 import { sync as resolveBin } from 'resolve-bin';
@@ -74,4 +74,15 @@ export async function buildBlocks({ singleBlock, hot }: { singleBlock?: string, 
 
 	await buildFunctionsPhp();
 	log(chalk.bold('Blocks successfully build!'));
+}
+
+export function getThemeBlocks() {
+	const blocks = readdirSync('./blocks', { withFileTypes: true })
+									.filter((block) => block.isDirectory());
+
+	const blockIds = blocks.map((block) => readFileSync(`./blocks/${block.name}/block.json`))
+												 .map((block) => JSON.parse(block.toString('utf-8')).name);
+
+	// return '';
+	return blockIds;
 }

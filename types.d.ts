@@ -13,9 +13,21 @@ interface ThemeData {
 		licenseUri?: string;
 	};
 	advanced?: {
-		/** Enables block-only mode - which turns Asterism into a block building toolset. */
+		/** Sets the mode.
+		 * blockOnly: Enables block-only mode - which turns Asterism into a block building toolset. */
 		mode?: 'blockOnly';
+		/** Attempts to prevent the gutenberg styles from loading on the client.
+		 * Note that this may break external plugins and some WordPress plugins that
+		 * depend on the gutenberg styles. USE WITH CAUTION!
+		 */
+		noGutenbergFrontend?: boolean;
 	};
+	/** Controls the allowed/excluded core blocks. If allow, only the blocks in the list
+	 * will be available. If exclude, all blocks but those specified will be available.
+	 * Blocks within the theme are not included. Both should not be set.
+	 */
+	allow: string[];
+	exclude: string[];
 }
 
 interface Theme extends ThemeData {
