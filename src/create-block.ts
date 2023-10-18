@@ -1,8 +1,9 @@
 import { copySync, existsSync, mkdirs, readdir, readdirSync } from 'fs-extra';
 import pkg from '../package.json';
 import { getTheme } from './asterism';
+import chalk from 'chalk';
 
-const { error } = console;
+const { log, error } = console;
 
 interface BlockCreateOptions {
 	description?: string;
@@ -52,6 +53,8 @@ export async function createBlock(title: string, slug: string, options: BlockCre
 		const updated = replaceTokens(replacers, fileText);
 
 		const replacedFile = replaceTokens(replacers, file);
-		Bun.write(Bun.file(`${outPath}/${replacedFile}`), updated);		
+		Bun.write(Bun.file(`${outPath}/${replacedFile}`), updated);
 	}
+
+	log(chalk.greenBright(`Created block ${title} with slug ${slug} at ${outPath} for theme ${theme.name}`));
 }

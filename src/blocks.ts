@@ -73,7 +73,7 @@ export async function buildBlocks({ singleBlock, hot }: { singleBlock?: string, 
 	}
 
 	await buildFunctionsPhp();
-	log(chalk.bold('Blocks successfully build!'));
+	log(chalk.bold('Blocks successfully built.'));
 }
 
 export function getThemeBlocks() {

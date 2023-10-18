@@ -6,7 +6,7 @@ import { watch as fsWatch, mkdirsSync } from 'fs-extra';
 import { buildBlocks } from './blocks';
 import { buildFunctionsPhp, copyThemeFiles } from './files';
 import { writeThemeStylesheet } from './styles';
-import { getTheme, getThemeDestination } from './asterism';
+import { clearThemeCache, getTheme, getThemeDestination } from './asterism';
 
 const { log, error } = console;
 
@@ -61,9 +61,14 @@ export async function watch(block: string) {
 			if (filename.includes('/.')) return;
 
 			if (!theme.isBlockOnly) {
-				console.error(filename);
-				if (filename.startsWith('theme')) {
+				if (filename.startsWith('theme.json')) {
+					clearThemeCache();
+					buildFunctionsPhp();
+				}
+				
+				if (filename.startsWith('theme/')) {
 					copyThemeFiles();
+					buildFunctionsPhp();
 				}
 
 				if (/(s|sc|sa)ss/g.test(filename)) {

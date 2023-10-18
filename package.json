@@ -1,7 +1,7 @@
 {
   "name": "wpasterism",
   "type": "module",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "types": "types.d.ts",
   "bin": {
     "asterism": "./index.ts"

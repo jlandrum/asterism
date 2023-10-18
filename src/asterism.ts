@@ -1,6 +1,9 @@
 import { mkdirsSync, readFileSync } from 'fs-extra';
 import path from 'node:path';
 import { findFile } from './utils';
+import chalk from 'chalk';
+
+const { log } = console;
 
 let themeObj: Theme | undefined = undefined;
 /**
@@ -23,6 +26,14 @@ export function getTheme() {
 	}
 
 	throw new Error('A theme.json file must exist in the current directory.');
+}
+
+/**
+ * Clears the theme cache so that next time getTheme is called, it will re-read the theme.json file
+ */
+export function clearThemeCache() {
+	themeObj = undefined;
+	log(chalk.gray('Cleared theme cache'));
 }
 
 /**

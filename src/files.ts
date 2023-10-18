@@ -21,12 +21,12 @@ export async function copyThemeFiles() {
 
 			// We generate functions.php during block build, so this needs to be skipped
 			if (file === 'functions.php') return;
+			
 			copySync(sourcePath, destinationPath);
 			console.log(chalk.gray(`Copied file: ${file}`));
 		});
 
-		await buildFunctionsPhp();
-		log(chalk.bold('Files successfully copied.'));
+		log(chalk.bold('Theme files successfully copied.'));
 	} catch (err) {
 		console.error(err);
 	}
@@ -50,9 +50,13 @@ export async function buildFunctionsPhp() {
 
 	if (theme.isBlockOnly) {
 		functionsPhp = '<?php\n' + functionsPhp;
+		log(chalk.gray(`Generated file: blocks.php`));
+		log(chalk.bold('functions.php successfully generated.'));
 		return writeThemeFile('blocks.php', functionsPhp);
 	} else {
 		functionsPhp = await Bun.file('./theme/functions.php').text() + functionsPhp;
+		log(chalk.gray(`Generated file: functions.php`));
+		log(chalk.bold('functions.php successfully generated.'));
 		return writeThemeFile('functions.php', functionsPhp);
 	}
 }
