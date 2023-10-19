@@ -23,7 +23,7 @@ export async function copyThemeFiles() {
 			if (file === 'functions.php') return;
 			
 			copySync(sourcePath, destinationPath);
-			console.log(chalk.gray(`Copied file: ${file}`));
+			log(chalk.gray(`Copied file: ${file}`));
 		});
 
 		log(chalk.bold('Theme files successfully copied.'));

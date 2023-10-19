@@ -6,6 +6,8 @@ import chalk from 'chalk';
 const { log, error } = console;
 
 interface BlockCreateOptions {
+	title: string,
+	slug: string,
 	description?: string;
 	icon?: string;
 	category?: string;
@@ -18,7 +20,7 @@ function replaceTokens(tokens: any, text: string) {
 	}, text);
 }
 
-export async function createBlock(title: string, slug: string, options: BlockCreateOptions) {
+export async function createBlock({title, slug, ...options}: BlockCreateOptions) {
 	const templatePath = `${__dirname}/templates/blocks/${options.type}`;
 	const outPath = `./blocks/${slug}/`;
 

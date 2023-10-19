@@ -1,16 +1,17 @@
 import minimist from 'minimist';
 import chalk from 'chalk';
+import animate from 'chalk-animation';
 
 import path from 'path';
 import { watch as fsWatch, mkdirsSync } from 'fs-extra';
-import { buildBlocks } from './blocks';
+import { buildBlocks, getThemeBlockPaths } from './blocks';
 import { buildFunctionsPhp, copyThemeFiles } from './files';
 import { writeThemeStylesheet } from './styles';
 import { clearThemeCache, getTheme, getThemeDestination } from './asterism';
 
 const { log, error } = console;
 
-export async function build() {
+export async function build(verbose: boolean = false) {
 	log(chalk.bold('Starting full build...'));
 	const theme = getTheme();
 
@@ -25,7 +26,7 @@ export async function build() {
 			await writeThemeStylesheet();
 			await copyThemeFiles();
 		}
-		await buildBlocks();
+		await buildBlocks({ verbose });
 		log(chalk.bold.greenBright(`Theme ${theme.name} build successfully!`));
 	} catch (e) {
 		error(chalk.bold.redBright(`Theme ${theme.name} failed to build: ${e}`));
@@ -34,11 +35,19 @@ export async function build() {
 	return true;
 }
 
-export async function watch(block: string) {
+export async function watch(block: string, verbose: boolean = false) {
 	const theme = getTheme();
+
+	const blocks = getThemeBlockPaths();
+
+	if (!blocks.includes(block)) {
+		error(chalk.bold.red(`Block ${block} does not exist.`));
+		return;
+	}
+
 	if (block) {
 		log(chalk.cyanBright(`Watching block ${block}`));
-		buildBlocks({ hot: true, singleBlock: block });
+		buildBlocks({ hot: true, singleBlock: block, verbose });
 	} else {
 		if (theme.isBlockOnly) {
 			error(chalk.bold.red('A block must be provided in block only mode, or this will have no effect.'));

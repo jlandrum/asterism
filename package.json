@@ -1,7 +1,7 @@
 {
   "name": "wpasterism",
   "type": "module",
-  "version": "0.1.4",
+  "version": "0.2.1",
   "types": "types.d.ts",
   "bin": {
     "asterism": "./index.ts"
@@ -11,14 +11,21 @@
   },
   "peerDependencies": {
     "typescript": "^5.0.0",
-    "@wordpress/scripts": "^26.14.0"
+    "@wordpress/scripts": "26.14.0"
   },
   "dependencies": {
     "@types/chalk-animation": "^1.6.1",
     "@types/commander": "^2.12.2",
     "@types/fs-extra": "^11.0.2",
+    "@types/inquirer": "^9.0.6",
     "@types/resolve-bin": "^0.4.1",
     "@types/wordpress__block-editor": "^11.5.5",
+    "@types/wordpress__blocks": "^12.5.7",
+    "@types/wordpress__dom": "^2.3.3",
+    "@types/wordpress__editor": "^13.6.5",
+    "@wordpress/icons": "^9.35.0",
+    "@wordpress/scripts": "26.15.0",
+    "args-parser": "^1.3.0",
     "babelify": "^10.0.0",
     "browserify": "^17.0.0",
     "chalk": "^5.3.0",
@@ -26,9 +33,13 @@
     "commander": "^11.1.0",
     "concat-stream": "^2.0.0",
     "fs-extra": "^11.1.1",
+    "inquirer": "^9.2.11",
+    "interactive-commander": "^0.5.32",
+    "minimist-string": "^1.0.2",
     "purify-css": "^1.2.5",
     "readline": "^1.3.0",
     "resolve-bin": "^1.0.1",
-    "sass": "^1.69.2"
+    "sass": "^1.69.2",
+    "string-argv": "^0.3.2"
   }
 }

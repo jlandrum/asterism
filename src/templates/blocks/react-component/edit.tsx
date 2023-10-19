@@ -9,8 +9,8 @@ export default function Edit({ attributes, setAttributes }: any) {
   return (
     <SwiftState save={false}>
       <$$component$$
+        {...attributes}
         blockProps={useBlockProps()}
-        attributes={attributes}
         setAttributes={setAttributes}
       />
     </SwiftState>

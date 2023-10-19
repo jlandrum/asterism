@@ -7,8 +7,8 @@ export default function save({ attributes }: any) {
   return (
     <SwiftState save={true}>
       <$$component$$
+				{...attributes}
         blockProps={useBlockProps.save()}
-        attributes={attributes}
       />
     </SwiftState>
   );

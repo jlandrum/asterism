@@ -1,4 +1,5 @@
 interface ThemeData {
+	"$asterism": true;
 	name: string;
 	author?: string;
 	copyright: string;
@@ -35,3 +36,5 @@ interface ThemeData {
 interface Theme extends ThemeData {
 	isBlockOnly?: boolean;
 }
+
+declare module 'minimist-string';

@@ -12,20 +12,23 @@ let themeObj: Theme | undefined = undefined;
  */
 export function getTheme() {
 	if (themeObj) return themeObj;
-	const themeFile = findFile('theme.json');
+	const themeFile = findFile('theme.json', './', `"$asterism": true`);
 
 	if (themeFile) {
-		const _theme = JSON.parse(readFileSync(themeFile).toString('utf-8'));
+		process.chdir(path.dirname(themeFile));
+
+		const _theme = JSON.parse(readFileSync('theme.json').toString('utf-8'));
 
 		themeObj = {
 			...(_theme as ThemeData),
+			themeFolder: _theme.themeFolder || _theme.namespace,
 			isBlockOnly: (_theme as ThemeData)?.advanced?.mode === 'blockOnly',
 		};
 
 		return themeObj;
 	}
 
-	throw new Error('A theme.json file must exist in the current directory.');
+	throw new Error('An theme.json file must exist somewhere within the current directory.');
 }
 
 /**
@@ -40,14 +43,14 @@ export function clearThemeCache() {
  * Gets the current path for the theme relative to the asterism build tools
  * @returns A string pointing to the path of the WordPress themes folder
  */
-export const getThemeDestination = () => path.resolve(`../wp-content/themes/${getTheme().namespace}`);
+export const getThemeDestination = () => path.resolve(`../wp-content/themes/${getTheme().themeFolder}`);
 
 /**
  * Gets the absolute path for a destination for a file
  * @param file The file path to resolve
  * @returns The destination file path
  */
-export const getThemeFileDestination = (file: string) => path.resolve(`../wp-content/themes/${getTheme().namespace}/${file}`);
+export const getThemeFileDestination = (file: string) => path.resolve(`../wp-content/themes/${getTheme().themeFolder}/${file}`);
 
 /**
  * Writes a file to the theme, ensuring the path to the file exists

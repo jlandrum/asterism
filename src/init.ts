@@ -19,7 +19,16 @@ export async function initFiles(baseTheme: string = "clean") {
 	if (!(await Bun.file('./css/theme.scss').exists())) {
 		cpSync(`${__dirname }/templates/theme.scss`, './css/theme.scss');
 	}
+
 	copy(`${__dirname }/templates/theme/${baseTheme}`, './theme', { overwrite: false });
+
+	if (!(await Bun.file('./package.json').exists())) {
+		cpSync(`${__dirname}/templates/package.json`, './package.json');
+	}
+
+	if (!(await Bun.file('./tsconfig.json').exists())) {
+		cpSync(`${__dirname}/templates/tsconfig.json`, './tsconfig.json');
+	}
 }
 
 async function _askForInput(question: string, currentValue?: string, defaultValue: string = ""): Promise<string> {
@@ -65,6 +74,7 @@ export async function createTheme(theme: Partial<ThemeData> = {}) {
 
 	const themeOut: Partial<ThemeData> = {...theme};
 
+	themeOut['$asterism'] = true;
 	themeOut.name = await askForInput('Theme Name: ', theme.name, 'Asterism Theme');
 	themeOut.copyright = await askForInput('Copyright: ', theme.copyright, `©️ ${new Date().getFullYear()}`);
 	themeOut.namespace = await askForInput('Namespace: ', theme.namespace, 'asterism-theme', /^[a-z0-9-]+$/);
