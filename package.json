@@ -1,12 +1,12 @@
 {
   "name": "@yesand/asterism",
   "type": "module",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "types": "types.d.ts",
   "bin": {
     "asterism": "./index.ts",
-		"ast": "./index.ts",
-		"wpa": "./index.ts"
+    "ast": "./index.ts",
+    "wpa": "./index.ts"
   },
   "devDependencies": {
     "bun-types": "latest"
@@ -14,6 +14,10 @@
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@wordpress/scripts": "26.14.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yesandagency/asterism.git"
   },
   "dependencies": {
     "@types/chalk-animation": "^1.6.1",
