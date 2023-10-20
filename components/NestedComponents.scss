@@ -1,0 +1,14 @@
+.nested-components {
+	position: relative;
+
+	&::after {
+		border: 1px dashed white;
+		border-radius: 5px;
+		inset: 0;
+		content: '';
+		position: absolute;
+		mix-blend-mode: difference;
+		opacity: 0.2;
+		pointer-events: none;
+	}
+}

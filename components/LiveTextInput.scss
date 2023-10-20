@@ -1,74 +1,77 @@
 .live-text-input {
 	position: relative;
-	
-	&>textarea, &::after {
-		grid-area: 1 / 1 / 2 / 2;
-	}
 
-	.pre {
-		white-space: pre-wrap;
-		opacity: 0;
-		display: block;
-		min-height: 30px;
-		margin-right: 30px;
-	}
+	&__content {
+		&>textarea, &::after {
+			grid-area: 1 / 1 / 2 / 2;
+		}
 
-	textarea {
-		position: absolute;
-		inset: 0;
-		box-sizing: border-box;
-		display: inline-block;
-		resize: none;
-		height: calc(100%);
-		overflow: hidden;
-		margin: 0;
-		white-space: pre-wrap;
-		background-color: transparent;
-		border: none;
-	}
+		.pre {
+			white-space: pre-wrap;
+			opacity: 0;
+			display: block;
+			min-height: 30px;
+			margin-right: 30px;
+		}
 
-	&::after {
-		inset: 0;
-		content: '';
-		position: absolute;
-		border: 1px dashed white;
-		mix-blend-mode: difference;
-		pointer-events: none;
-	}
+		textarea {
+			position: absolute;
+			inset: 0;
+			box-sizing: border-box;
+			display: inline-block;
+			resize: none;
+			height: calc(100%);
+			overflow: hidden;
+			margin: 0;
+			white-space: pre-wrap;
+			background-color: transparent;
+			border: none;
+		}
 
-	&:focus-within {
-		.components-button, .popover-slot {
+		&::after {
+			inset: 0;
+			content: '';
+			position: absolute;
+			border: 1px dashed white;
+			mix-blend-mode: difference;
+			pointer-events: none;
+			opacity: 0.2;
+		}
+
+		&:focus-within {
+			.components-button, .popover-slot {
+				opacity: 1;
+				pointer-events: all;
+			}
+			&::after {
+				border: 1px solid transparent;
+			}
+		}
+
+		.components-button {
+			opacity: 0;
+			pointer-events: none;
+			position: absolute;
+			inset: -40px auto auto 0;
+		}
+
+		&:focus-within .block-editor-url-input {
 			opacity: 1;
 			pointer-events: all;
 		}
-		&::after {
-			border: 1px solid transparent;
-		}
-	}
 
-	.components-button {
-		opacity: 0;
-		pointer-events: none;
-		position: absolute;
-		inset: -40px auto auto 0;
-	}
-
-	&:focus-within .block-editor-url-input {
-		opacity: 1;
-		pointer-events: all;
-	}
-
-	.block-editor-url-input {
-		position: absolute;
-		left: 50%;
-		transform: translateX(-50%);
-		top: -60px;
-		opacity: 0;
-		pointer-events: none;
-		&__input {
-			width: 100%;
-			&:focus {
-				outline: none;
+		.block-editor-url-input {
+			position: absolute;
+			left: 50%;
+			transform: translateX(-50%);
+			top: -60px;
+			opacity: 0;
+			pointer-events: none;
+			&__input {
+				width: 100%;
+				&:focus {
+					outline: none;
+				}
 			}
 		}
 	}

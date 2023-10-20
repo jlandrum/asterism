@@ -1,24 +1,21 @@
 import React from "react";
 
-const state = {
-	save: false
+export class SaveOnly extends React.Component<{
+	children: any;
+}> {
+	render() {
+		const hooksAvailable = this._reactInternals;
+		if (hooksAvailable) return <></>
+		return this.props.children
+	}
 }
 
-export const SaveOnly = ({ children }) => {
-  if (state.save) return children;
-  return <></>;
-};
-
-export const EditOnly = ({ children }) => {
-  if (!state.save) return children;
-  return <></>;
-};
-
-export const SwiftState = ({ save, children }) => {
-	state.save = save;
-	return children;
-};
-
-export const useSwiftState = () => {
-  return state.save;
-};
+export class EditOnly extends React.Component<{
+  children: any;
+}> {
+  render() {
+    const hooksAvailable = this._reactInternals;
+		if (hooksAvailable) return this.props.children
+    return <></>
+  }
+}

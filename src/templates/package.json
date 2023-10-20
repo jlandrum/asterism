@@ -1,0 +1,15 @@
+{
+  "type": "module",
+  "types": "types.d.ts",
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "dependencies": {
+    "@types/wordpress__block-editor": "^11.5.5",
+    "@types/wordpress__blocks": "^12.5.7",
+    "@types/wordpress__dom": "^2.3.3",
+    "@types/wordpress__editor": "^13.6.5",
+    "@wordpress/icons": "^9.35.0",
+    "wpasterism": "^0.2.0"
+  }
+}
