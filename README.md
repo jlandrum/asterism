@@ -4,7 +4,7 @@
 
 Asterism is a command-line tool designed for rapid development of block-based themes in WordPress. It provides a simple and efficient approach to creating visually appealing and functional themes. With Asterism, developers can leverage pre-configured templates and streamline tasks through a command-line interface. This enables quick prototyping, iteration, and deployment of WordPress themes, making it accessible to both beginners and experienced developers alike.
 
-To install it globally, run `bun install -g wpasterism` - [bun](https://bun.sh) is required.
+To install it globally, run `bun install -g @yesand/asterism` - [bun](https://bun.sh) is required.
 
 Asterism can then be used in your Wordpress development folder using `asterism`, `ast` or `wpa`
 
@@ -93,11 +93,9 @@ If `mode` is set to `blockOnly` under `advanced` in your `theme.json`, various t
 * CSS will no longer be compiled
 
 Note that in order for Asterism to place into the proper location, the `namespace` must still be set to the
-folder name of your theme, and Asterism's `src` folder must still be at the root of your WordPress install.
+folder name of your theme or `themeFolder` must be set in your `theme.json`.
 
-If you are using a base theme, or a theme with a different name than what you provided as your namespace, then you can add `themeFolder` to your `theme.json` to tell Asterism where to put it.
-
-In the future, more modes may be provided to allow advanced usage of Asterism.
+<small>In the future, more modes may be provided to allow advanced usage of Asterism.</small>
 
 ## What's Missing / Broken / Might Change
 * Site-wide JavaScript is not yet built or copied over.
