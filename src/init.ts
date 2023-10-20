@@ -18,6 +18,10 @@ export async function initFiles(baseTheme: string = "clean") {
 
 	if (!(await Bun.file('./css/theme.scss').exists())) {
 		cpSync(`${__dirname }/templates/theme.scss`, './css/theme.scss');
+	}	
+	
+	if (!(await Bun.file('./css/style-editor.scss').exists())) {
+		cpSync(`${__dirname }/templates/style-editor.scss`, './css/style-editor.scss');
 	}
 
 	copy(`${__dirname }/templates/theme/${baseTheme}`, './theme', { overwrite: false });

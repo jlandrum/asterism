@@ -49,7 +49,7 @@ export async function buildCss(): Promise<string> {
 }
 
 /**
- * Generates the theme's CSS as a string
+ * Generates the theme's style editor CSS as a string
  * @returns 
  */
 export async function buildEditorCss(): Promise<string|undefined> {

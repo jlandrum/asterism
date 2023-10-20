@@ -16,6 +16,14 @@ log(chalk.bold.blue(`Asterism ${pkg.version}`));
 
 const program = new InteractiveCommand();
 
+const blockPaths = (() => {
+	try {
+		return getThemeBlockPaths() as readonly string[];
+	} catch {
+		return [] as const;
+	}
+})();
+
 program
 	.name('asterism');
 
@@ -31,7 +39,7 @@ program.command('watch')
 	.addOption(new InteractiveOption(
 		'-b, --block [block]',
 		'Watches a specific block, useful for live editing a block.',
-	).choices(getThemeBlockPaths()))
+	).choices(blockPaths))
 	.option('-v, --verbose', 'Enables verbose output', false)
 	.action(async (opts) => {
 		await watch(opts.block, opts.verbose);

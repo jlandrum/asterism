@@ -4,7 +4,9 @@
   "version": "0.4.0",
   "types": "types.d.ts",
   "bin": {
-    "asterism": "./index.ts"
+    "asterism": "./index.ts",
+		"ast": "./index.ts",
+		"wpa": "./index.ts"
   },
   "devDependencies": {
     "bun-types": "latest"
