@@ -1,4 +1,4 @@
-import React, { useState, useRef } from '@wordpress/element';
+import React, { useState } from '@wordpress/element';
 
 import './LiveTextInput.scss';
 import { EditOnly, SaveOnly } from './SwiftState';
@@ -18,51 +18,63 @@ import {
 
 export interface LiveTextInputValue {
   value: string;
-  link?: object;
+  link?: { url: string; id: number; opensInNewTab?: boolean };
 }
 
-interface LiveTextInputProps {
-  value?: LiveTextInputValue;
+type LiveTextVarTypes = string | LiveTextInputValue;
+
+interface LiveTextInputProps<T extends LiveTextVarTypes> {
+  value?: T;
   className?: string;
-  onChange: (value: LiveTextInputValue) => void;
+  onChange: (value: T) => void;
   children: any;
-  withLink?: boolean;
-	useSlot?: string;
-} 
+  useSlot?: string;
+	asLink?: boolean;
+}
 
-// Types definitions are out of date :(
-const URLPopover = _URLPopover as any;
-
-const _LiveTextInput = ({
+const _LiveTextInput = <T extends LiveTextVarTypes = string>({
   value,
   className,
   onChange,
-  withLink,
+  asLink = false,
   useSlot,
-}: LiveTextInputProps): React.Element => {
+}: LiveTextInputProps<T>): React.Element => {
   const [linkPopover, setLinkPopover] = useState(false);
   const [toolbar, setToolbar] = useState(false);
 
-  function setLink(link: object) {
-    onChange({ value: value?.value || "", link });
-  }
+	const unwrapValue = asLink
+		? (value as LiveTextInputValue).value
+    : (value as string);
+
+	function setLink(link: T) {
+		if (asLink) {
+			onChange({ value: (value as LiveTextInputValue).value, link } as T);
+		} else {
+			onChange(value as T);
+		}
+	}
+
+	function setValue(newValue: T) {
+		if (asLink) {
+			console.error(asLink, 'hit');
+			onChange({ link: (value as LiveTextInputValue).link, value: newValue } as T);
+		} else {
+			onChange(newValue as T);
+		}
+	}
 
   return (
     <div className="live-text-input" onFocus={() => setToolbar(true)}>
       <div className="live-text-input__content">
-        <span className={`pre ${className}`}>{value?.value}</span>
+        <span className={`pre ${className}`}>{unwrapValue}</span>
         <textarea
           className={`${className}`}
-          value={value?.value}
-          onChange={(e) =>
-            onChange({
-              ...value,
-              value: (e.target as HTMLTextAreaElement).value,
-            })
-          }
+          value={unwrapValue}
+          // @ts-ignore
+          onChange={(v) => setValue(v.target.value)}
           onFocus={() => setToolbar(true)}
         />
-        {toolbar && withLink && !useSlot && (
+        {toolbar && asLink && !useSlot && (
           <Popover
             placement="top-end"
             id="live-text-input-links"
@@ -85,6 +97,8 @@ const _LiveTextInput = ({
                     >
                       <__experimentalLinkControl
                         onChange={setLink}
+                        // Disable open in new window as it breaks gutenberg :(
+                        settings={[]}
                         value={value ? value.link || undefined : undefined}
                       />
                     </Popover>
@@ -94,7 +108,7 @@ const _LiveTextInput = ({
             </Toolbar>
           </Popover>
         )}
-        {useSlot && withLink && (
+        {useSlot && asLink && (
           <Fill name={useSlot}>
             <ToolbarButton
               icon="admin-links"
@@ -110,6 +124,8 @@ const _LiveTextInput = ({
                 >
                   <__experimentalLinkControl
                     onChange={setLink}
+                    // Disable open in new window as it breaks gutenberg :(
+                    settings={[]}
                     value={value ? value.link || undefined : undefined}
                   />
                 </Popover>
@@ -125,7 +141,7 @@ const _LiveTextInput = ({
 /**
  * A inline text input that gives the user an indication that the text is editable.
  */
-const LiveTextInput = (props: LiveTextInputProps) => (
+const LiveTextInput = <T,>(props: LiveTextInputProps<LiveTextVarTypes>) => (
 	<>
 		<SaveOnly>
 			{props.children}

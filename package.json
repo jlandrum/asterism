@@ -1,5 +1,5 @@
 {
-  "name": "wpasterism",
+  "name": "@yesand/asterism",
   "type": "module",
   "version": "0.4.0",
   "types": "types.d.ts",
