@@ -1,6 +1,4 @@
 .nested-components {
-	position: relative;
-
 	&::after {
 		border: 1px dashed white;
 		border-radius: 5px;
@@ -11,4 +9,13 @@
 		opacity: 0.2;
 		pointer-events: none;
 	}
+
+	& ~ .nested-components__button {
+		align-self: center;
+	}
+}
+
+/** Temporary fix to popovers with slots. May break other things - use with caution */
+.components-popover__content {
+	width: auto !important;
 }

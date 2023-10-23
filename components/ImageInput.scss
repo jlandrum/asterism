@@ -3,6 +3,16 @@
 	display: inline-block;
 	cursor: pointer;
 
+	img {
+		min-width: 50px;
+		min-height: 50px;
+	}
+
+	&__image {
+		background: none;
+		border: none;
+	}
+
 	&::after {
 		content: '';
 		inset: 0;

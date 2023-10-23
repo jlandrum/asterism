@@ -41,7 +41,7 @@ export async function buildFunctionsPhp() {
 	}
 
 	if (theme.exclude) {
-		functionsPhp += `\n${generateOmitBlocks([...theme.exclude, ...getThemeBlocks()])}`;
+		functionsPhp += `\n${generateOmitBlocks([...theme.exclude])}`;
 	}
 
 	if (theme.advanced?.noGutenbergFrontend) {

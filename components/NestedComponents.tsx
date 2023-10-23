@@ -1,17 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useId, useRef, createRef } from "@wordpress/element";
+import "./NestedComponents.scss";
+
 import { EditOnly, SaveOnly } from "./SwiftState";
-import { Button } from '@wordpress/components';
 import { plus } from '@wordpress/icons';
 import {
+	Button,
   Popover,
   Toolbar,
   ToolbarGroup,
   ToolbarButton,
-	Slot,
+  Slot,
+  SlotFillProvider,
 } from "@wordpress/components";
 
-import './NestedComponents.scss';
 import { chevronUp, chevronDown, chevronLeft, chevronRight, close } from "@wordpress/icons";
+
+function uniqueId(obj: any) {
+  const jsonString = JSON.stringify(obj);
+  let hash = 0;
+
+  for (let i = 0; i < jsonString.length; i++) {
+    const charCode = jsonString.charCodeAt(i);
+    hash = (hash << 5) - hash + charCode;
+    hash |= 0;
+  }
+  if (hash < 0) {
+    hash = -hash;
+  }
+  return hash.toString();
+}
 
 /**
  * NestedComponentsProps type.
@@ -19,12 +36,19 @@ import { chevronUp, chevronDown, chevronLeft, chevronRight, close } from "@wordp
  * @property {string} value - The object that holds the data for the nested components
  */
 interface NestedComponentsProps<T> {
-	value: T[];
-	emptyObject?: T;
-	className?: string;
-	slotName?: string;
-	onChange: (value: T[]) => void;
-	children: (value: T, index?: number, update?: (obj:Partial<T>) => void) => React.ReactNode;
+  value: T[];
+  emptyObject?: T;
+  className?: string;
+  slotName?: string;
+  horizontal?: boolean;
+	maxItems: number;
+  onChange: (value: T[]) => void;
+  children: (
+    value: T,
+    index?: number,
+		slot?: string,
+    update?: (obj: Partial<T>) => void
+  ) => React.ReactNode;
 }
 
 const NestedEditor = <T,>({
@@ -32,10 +56,13 @@ const NestedEditor = <T,>({
   emptyObject = {} as T,
   className,
   slotName,
+	maxItems,
+	horizontal = false,
   onChange,
   children,
 }: NestedComponentsProps<T>) => {
   const [toolbar, setToolbar] = useState(-1);
+	const popoverAnchor = useRef<any[]>([]);
 
   function addChild() {
     onChange([...value, { ...emptyObject }]);
@@ -43,14 +70,28 @@ const NestedEditor = <T,>({
 
   function removeChild(atIndex: number) {
     onChange(value.filter((_, index) => index !== atIndex));
+		setToolbar(-1);
   }
 
   function moveChild(fromIndex: number, toIndex: number) {
     const newChildren = [...value];
     const [child] = newChildren.splice(fromIndex, 1);
     newChildren.splice(toIndex, 0, child);
+		setToolbar(toIndex);
     onChange(newChildren);
   }
+
+	function moveUp(index: number) {
+		if (index > 0) {
+			moveChild(index, index - 1);
+		}
+	}
+
+	function moveDown(index: number) {
+		if (index < value.length - 1) {
+			moveChild(index, index + 1);
+		}
+	}
 
   const updateChild = (atIndex: number) => (partialChanges: Partial<T>) => {
     const newChildren = [...value];
@@ -62,9 +103,17 @@ const NestedEditor = <T,>({
     <>
       <div className={`nested-components ${className}`}>
         {value.map((v, i) => (
-          <div key={i} onFocus={() => setToolbar(i)}>
+          <div
+            key={i}
+            onFocus={() => setToolbar(i)}
+            ref={(ref) => (popoverAnchor.current[i] = ref)}
+          >
             {toolbar === i && (
-              <Popover onClose={() => setToolbar(-1)} placement="top-start">
+              <Popover
+                onClose={() => setToolbar(-1)}
+                placement="top-start"
+                anchor={popoverAnchor.current[i]}
+              >
                 <Toolbar
                   label="NestedEditor"
                   id="nestedEditor"
@@ -78,19 +127,36 @@ const NestedEditor = <T,>({
                       }}
                     ></ToolbarButton>
                   </ToolbarGroup>
-                  {slotName && (
-                    <ToolbarGroup>
-                      <Slot name={`${slotName}_${i}`} />
-                    </ToolbarGroup>
-                  )}
+                  <ToolbarGroup>
+                    <ToolbarButton
+                      icon={horizontal ? chevronLeft : chevronUp}
+                      onClick={() => {
+                        moveUp(i);
+                      }}
+                    ></ToolbarButton>
+                    <ToolbarButton
+                      icon={horizontal ? chevronRight : chevronDown}
+                      onClick={() => {
+                        moveDown(i);
+                      }}
+                    ></ToolbarButton>
+                  </ToolbarGroup>
+                  {slotName && <Slot name={`${slotName}_${i}`} />}
                 </Toolbar>
               </Popover>
             )}
-            {children(v, i, updateChild(i))}
+            {children(v, i, `${slotName}_${i}`, updateChild(i))}
           </div>
         ))}
       </div>
-      <Button icon={plus} variant="tertiary" onClick={addChild} />
+      <Button
+				disabled={value.length >= maxItems}
+        icon={plus}
+        variant="tertiary"
+        onClick={addChild}
+        style={{ background: "white" }}
+				className="nested-components__button"
+      />
     </>
   );
 };

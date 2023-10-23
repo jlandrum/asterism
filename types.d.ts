@@ -1,4 +1,11 @@
+import ImageInput from 'components/ImageInput';
+import LiveTextInput from 'components/LiveTextInput';
+
 export * as NestedComponents from './components/NestedComponents';
+export * as LiveTextInput from './components/LiveTextInput';
+export * as ImageInput from './components/ImageInput';
+export { SaveOnly, EditOnly } from './components/SwiftState';
+
 export * from './components/SwiftState';
 
 interface ThemeData {

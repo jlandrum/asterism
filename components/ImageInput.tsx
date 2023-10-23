@@ -1,3 +1,5 @@
+import React, { useState, useId, useRef } from "@wordpress/element";
+
 import { __ } from "@wordpress/i18n";
 import { EditOnly, SaveOnly } from "./SwiftState";
 import {
@@ -6,86 +8,112 @@ import {
   MediaUploadCheck,
   MediaUpload,
 } from "@wordpress/block-editor";
-import { Button, ButtonGroup } from "@wordpress/components";
-import { chevronLeft, chevronRight, chevronUp, chevronDown, close, replace } from "@wordpress/icons";
+import {
+  Button,
+  ButtonGroup,
+  Fill,
+  Slot,
+  Toolbar,
+  ToolbarGroup,
+  Popover,
+  ToolbarButton,
+} from "@wordpress/components";
+import {
+  chevronLeft,
+  chevronRight,
+  chevronUp,
+  chevronDown,
+  close,
+  replace,
+	media,
+	Icon
+} from "@wordpress/icons";
 
-import './ImageInput.scss';
+import "./ImageInput.scss";
 
 export interface Media {
-	id: number;
-	url?: string;
-	alt?: string;
+  id: number;
+  url?: string;
+  alt?: string;
 }
 
 interface ImageInputProps {
   label: string;
   value?: Media;
+  useSlot?: string;
   className?: string;
   onChange: (value: Media) => void;
-  removable?: boolean;
-	movable?: false | 'horizontal' | 'vertical';
-	onMove?: (direction: -1 | 1) => void;
-	onRemove?: () => void;
 }
 
-const moveLabels = {
-	'horizontal': ['Move Left', 'Move Right'],
-	'vertical': ['Move Up', 'Move Down'],
-}
-
-const icons = {
-	'horizontal': [chevronLeft, chevronRight],
-	'vertical': [chevronUp, chevronDown],
-}
-
-const ImageInput = ({
+const ImageInputEditor = ({
   label = "Image",
   value,
   className,
-  removable = false,
-	movable = false,
+  useSlot,
   onChange,
-	onMove,
-	onRemove
 }: ImageInputProps) => {
-	return (
-		<>
-			<EditOnly>
-				<div className="image-input">
-					<MediaUploadCheck>
-						<MediaUpload
-							title={__("Image", "esa")}
-							onSelect={(v) => onChange(v)}
-							allowedTypes={["image"]}
-							render={(props: any) =>
-								value?.url ? (
-									<img
-										className={className}
-										src={value?.url}
-										alt={value?.alt}
-										tabIndex={0}
-										onClick={() => props.open()}
-									/>
-								) : (
-									<div className={`${className||''} update-text`} onClick={() => props.open()}>
-										{__(value ? `Update ${label}` : `Select ${label}`, "esa")}
-									</div>
-								)
-							}
-						/>
-					</MediaUploadCheck>
-					<ButtonGroup className="actions">
-						{ movable && <Button onClick={() => onMove?.(-1)} label={moveLabels[movable][0]} icon={icons[movable][0]} /> }
-						{ movable && <Button onClick={() => onMove?.(1)} label={moveLabels[movable][1]} icon={icons[movable][1]} /> }
-						{ removable && <Button onClick={() => onRemove?.()} icon={close} label="Remove" />}
-					</ButtonGroup>
-				</div>
-			</EditOnly>
-			<SaveOnly>
-				<img className={className} src={value?.url} alt={value?.alt} />
-			</SaveOnly>
-		</>
-	);
+  const [imagePopover, setImagePopover] = useState(false);
+  const [toolbar, setToolbar] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const ref = useRef<any>();
+	const buttonRef = useRef<any>();
+
+  const id = useId();
+  const internalSlot = useSlot || `image-input-toolbar-${id}`;
+
+  return (
+    <>
+      <div className="image-input" onFocus={() => setToolbar(true)} ref={ref}>
+        <button className="image-input__image">
+          <img src={value?.url} alt={value?.alt} className={className} />
+        </button>
+      </div>
+      {!useSlot && toolbar && (
+        <Popover anchor={ref.current} onClose={() => setToolbar(false)}>
+          <Toolbar label="Image Input">
+            <Slot name={internalSlot}></Slot>
+          </Toolbar>
+        </Popover>
+      )}
+      <MediaUpload
+        title={"Image"}
+        onSelect={onChange}
+        allowedTypes={["image"]}
+        render={(props: any) => (
+          <Button ref={buttonRef} style={{display: 'none'}} icon={media} onClick={props.open} />
+        )}
+      />
+      <Fill name={internalSlot}>
+        <ToolbarGroup>
+          {/* <MediaUploadCheck> */}
+          <MediaUpload
+            title={"Image"}
+            onSelect={(v) => {
+              onChange(v);
+              setEditing(false);
+            }}
+            allowedTypes={["image"]}
+            render={(props: any) => <Button icon={media} onClick={() => buttonRef?.current?.click()} />}
+          />
+          {/* </MediaUploadCheck> */}
+        </ToolbarGroup>
+      </Fill>
+    </>
+  );
+};
+
+const ImageInput = (props: ImageInputProps) => {
+  const { label = "Image", value, className, useSlot, onChange } = props;
+  return (
+    <>
+      <EditOnly>
+        <ImageInputEditor {...props} />
+      </EditOnly>
+      <SaveOnly>
+        <img className={className} src={value?.url} alt={value?.alt} />
+      </SaveOnly>
+    </>
+  );
 };
 
 export default ImageInput;
