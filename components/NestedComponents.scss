@@ -10,9 +10,11 @@
 		pointer-events: none;
 	}
 
-	& ~ .nested-components__button {
-		align-self: center;
-	}
+}
+
+.nested-components__button {
+	align-self: center;
+	max-width: 36px;
 }
 
 /** Temporary fix to popovers with slots. May break other things - use with caution */

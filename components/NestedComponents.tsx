@@ -41,7 +41,7 @@ interface NestedComponentsProps<T> {
   className?: string;
   slotName?: string;
   horizontal?: boolean;
-	maxItems: number;
+	maxItems?: number;
   onChange: (value: T[]) => void;
   children: (
     value: T,
@@ -148,15 +148,15 @@ const NestedEditor = <T,>({
             {children(v, i, `${slotName}_${i}`, updateChild(i))}
           </div>
         ))}
+        <Button
+          disabled={!!(maxItems && value.length >= maxItems)}
+          icon={plus}
+          variant="tertiary"
+          onClick={addChild}
+          style={{ background: "white" }}
+          className="nested-components__button"
+        />
       </div>
-      <Button
-				disabled={value.length >= maxItems}
-        icon={plus}
-        variant="tertiary"
-        onClick={addChild}
-        style={{ background: "white" }}
-				className="nested-components__button"
-      />
     </>
   );
 };
