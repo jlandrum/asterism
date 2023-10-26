@@ -1,9 +1,11 @@
-export * from './components/ImageInput';
-export * from './components/InnerBlocks';
-export * from './components/ImageInput';
-export * from './components/LiveTextInput';
-export * from './components/NestedComponents';
-export * from './components/SwiftState';
+/// <reference lib="dom" />
+
+export * from './components/ImageInput/ImageInput';
+export * from './components/InnerBlocks/InnerBlocks';
+export * from './components/ImageInput/ImageInput';
+export * from './components/LiveTextInput/LiveTextInput';
+export * from './components/NestedComponents/NestedComponents';
+export * from './components/SwiftState/SwiftState';
 
 interface PostTypeField {
 	name: string;

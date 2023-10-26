@@ -5,7 +5,7 @@ import React, {
   createElement,
 } from "@wordpress/element";
 
-import { EditOnly, EditOnlyWrapper, SaveOnly } from "./SwiftState";
+import { EditOnly, EditOnlyWrapper, SaveOnly } from "../SwiftState/SwiftState";
 import { plus } from '@wordpress/icons';
 import {
 	Button,
@@ -18,22 +18,7 @@ import {
 } from "@wordpress/components";
 
 import { chevronUp, chevronDown, chevronLeft, chevronRight, close } from "@wordpress/icons";
-import { ClickDetector } from "./ClickDetector";
-
-function uniqueId(obj: any) {
-  const jsonString = JSON.stringify(obj);
-  let hash = 0;
-
-  for (let i = 0; i < jsonString.length; i++) {
-    const charCode = jsonString.charCodeAt(i);
-    hash = (hash << 5) - hash + charCode;
-    hash |= 0;
-  }
-  if (hash < 0) {
-    hash = -hash;
-  }
-  return hash.toString();
-}
+import { ClickDetector } from "../ClickDetector/ClickDetector";
 
 /**
  * NestedComponentsProps type.

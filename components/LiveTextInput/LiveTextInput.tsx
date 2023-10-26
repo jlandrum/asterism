@@ -1,6 +1,6 @@
 import React, { useState, useId, useRef, useEffect } from '@wordpress/element';
 
-import { EditOnly, SaveOnly } from './SwiftState';
+import { EditOnly, SaveOnly } from '../SwiftState/SwiftState';
 import {
   URLPopover as _URLPopover,
   // @ts-ignore Types are out of date
@@ -14,7 +14,7 @@ import {
   Slot,
 	Fill
 } from "@wordpress/components";
-import { ClickDetector } from './ClickDetector';
+import { ClickDetector } from '../ClickDetector/ClickDetector';
 
 export interface LiveTextInputValue {
   value: string;
@@ -58,7 +58,7 @@ const _LiveTextInput = <T extends LiveTextVarTypes = string>({
 
 	function setLink(link: T) {
 		if (asLink) {
-			onChange({ value: (value as LiveTextInputValue).value, link } as T);
+			onChange({ value: (value as LiveTextInputValue).value, link } as unknown as T);
 		} else {
 			onChange(value as T);
 		}

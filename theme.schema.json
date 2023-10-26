@@ -3,6 +3,17 @@
     "definitions": {
         "PostType": {
             "properties": {
+                "fields": {
+                    "description": "Adds fields and corresponding meta boxes",
+                    "items": {
+                        "$ref": "#/definitions/PostTypeField"
+                    },
+                    "type": "array"
+                },
+                "fieldsTitle": {
+                    "description": "Sets a custom title for the fields box",
+                    "type": "string"
+                },
                 "gutenbergEnabled": {
                     "description": "Use the Gutenberg editor (defaults to false)",
                     "type": "boolean"
@@ -40,6 +51,62 @@
                 "showInRest": {
                     "description": "Should the post type be available in rest APIs?",
                     "type": "boolean"
+                },
+                "supports": {
+                    "description": "Indicates the supported features of the post type",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "type": "object"
+        },
+        "PostTypeField": {
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "readOnly": {
+                    "type": "boolean"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "checkbox",
+                        "file",
+                        "gallery",
+                        "image",
+                        "radio",
+                        "select",
+                        "text",
+                        "textarea",
+                        "wysiwyg"
+                    ],
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "Style": {
+            "properties": {
+                "footer": {
+                    "description": "Indicates the style should load in the footer",
+                    "type": "boolean"
+                },
+                "name": {
+                    "description": "The name of the style's file",
+                    "type": "string"
+                },
+                "priority": {
+                    "description": "The load priority of the style",
+                    "type": "number"
+                },
+                "version": {
+                    "description": "The version for this style",
+                    "type": "string"
                 }
             },
             "type": "object"
@@ -137,6 +204,13 @@
                 }
             },
             "type": "object"
+        },
+        "styles": {
+            "description": "Specifies styles as individual stylesheets",
+            "items": {
+                "$ref": "#/definitions/Style"
+            },
+            "type": "array"
         },
         "textDomain": {
             "description": "The text domain for this theme",

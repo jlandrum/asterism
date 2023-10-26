@@ -1,32 +1,19 @@
 import React, { useState, useId, useRef, useEffect } from "@wordpress/element";
 
 import { __ } from "@wordpress/i18n";
-import { EditOnly, SaveOnly } from "./SwiftState";
+import { EditOnly, SaveOnly } from "../SwiftState/SwiftState";
 import {
-  InspectorControls,
-  MediaPlaceholder,
-  MediaUploadCheck,
   MediaUpload,
 } from "@wordpress/block-editor";
 import {
   Button,
-  ButtonGroup,
   Fill,
   Slot,
   Toolbar,
-  ToolbarGroup,
   Popover,
-  ToolbarButton,
 } from "@wordpress/components";
 import {
-  chevronLeft,
-  chevronRight,
-  chevronUp,
-  chevronDown,
-  close,
-  replace,
 	media,
-	Icon
 } from "@wordpress/icons";
 
 export interface Media {

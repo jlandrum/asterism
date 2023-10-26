@@ -1,8 +1,5 @@
-import React, {
-  useRef,
-	useEffect
-} from "@wordpress/element";
-import { SaveOnly, EditOnly } from "./SwiftState";
+import { useRef,useEffect } from "@wordpress/element";
+import { SaveOnly, EditOnly } from "../SwiftState/SwiftState";
 
 interface ClickDetectorProps {
 	onOuterClick?: () => void;

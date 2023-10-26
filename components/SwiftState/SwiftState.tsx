@@ -42,6 +42,7 @@ export class EditOnlyWrapper extends React.Component<{
 
 		// @ts-ignore As far as TS is aware, this isn't available - and that's fine
     const hooksAvailable = !!this._reactInternals;
+		// @ts-ignore Using strings is normal in this case in React but I'm unsure of how to fix the typing
     if (hooksAvailable) return <Node {...attrs}>{children}</Node>;
     return <>{children}</>;
   }
