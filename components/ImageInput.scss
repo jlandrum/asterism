@@ -1,8 +1,12 @@
+@import "common";
+
 .image-input {
 	position: relative;
 	display: inline-block;
 	cursor: pointer;
 
+	@include outline();
+	
 	img {
 		min-width: 50px;
 		min-height: 50px;
@@ -11,15 +15,6 @@
 	&__image {
 		background: none;
 		border: none;
-	}
-
-	&::after {
-		content: '';
-		inset: 0;
-		position: absolute;
-		border: 1px dashed white;
-		mix-blend-mode: difference;
-		pointer-events: none;
 	}
 	
 	&:hover::before {

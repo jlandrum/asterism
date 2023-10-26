@@ -5,9 +5,10 @@ import animate from 'chalk-animation';
 import path from 'path';
 import { watch as fsWatch, mkdirsSync } from 'fs-extra';
 import { buildBlocks, getThemeBlockPaths } from './blocks';
-import { buildFunctionsPhp, copyThemeFiles } from './files';
-import { writeThemeStylesheet } from './styles';
+import { buildFunctionsPhp, buildPlugin, copyThemeFiles } from './files';
+import { writeThemeStyles, writeThemeStylesheet } from './styles';
 import { clearThemeCache, getTheme, getThemeDestination } from './asterism';
+import { copyJsFiles } from './scripts';
 
 const { log, error } = console;
 
@@ -24,9 +25,12 @@ export async function build(verbose: boolean = false) {
 	try {
 		if (!theme.isBlockOnly) {
 			await writeThemeStylesheet();
+			await writeThemeStyles();
 			await copyThemeFiles();
+			await copyJsFiles();
 		}
 		await buildBlocks({ verbose });
+		await buildPlugin();
 		log(chalk.bold.greenBright(`Theme ${theme.name} build successfully!`));
 	} catch (e) {
 		error(chalk.bold.redBright(`Theme ${theme.name} failed to build: ${e}`));
@@ -40,7 +44,7 @@ export async function watch(block: string, verbose: boolean = false) {
 
 	const blocks = getThemeBlockPaths();
 
-	if (!blocks.includes(block)) {
+	if (!blocks.includes(block) && block) {
 		error(chalk.bold.red(`Block ${block} does not exist.`));
 		return;
 	}
@@ -73,6 +77,7 @@ export async function watch(block: string, verbose: boolean = false) {
 				if (filename.startsWith('theme.json')) {
 					clearThemeCache();
 					buildFunctionsPhp();
+					buildPlugin();
 				}
 				
 				if (filename.startsWith('theme/')) {
@@ -82,6 +87,11 @@ export async function watch(block: string, verbose: boolean = false) {
 
 				if (/(s|sc|sa)ss/g.test(filename)) {
 					writeThemeStylesheet();
+					writeThemeStyles();
+				}
+
+				if (/js/g.test(filename)) {
+					copyJsFiles();
 				}
 			}
 

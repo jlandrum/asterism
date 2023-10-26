@@ -13,4 +13,6 @@ export const InnerBlocks = (props: InnerBlocksIntl.Props) => (
 			<InnerBlocksIntl {...props} />
 		</EditOnly>
 	</>
-)
+);
+
+export default InnerBlocks;

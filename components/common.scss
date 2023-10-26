@@ -1,0 +1,11 @@
+@mixin outline() {
+	&::after {
+		inset: 0;
+		content: '';
+		position: absolute;
+		border: 1px dashed white;
+		mix-blend-mode: difference;
+		pointer-events: none;
+		opacity: 0.2;
+	}
+}

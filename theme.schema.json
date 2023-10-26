@@ -1,0 +1,156 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "PostType": {
+            "properties": {
+                "gutenbergEnabled": {
+                    "description": "Use the Gutenberg editor (defaults to false)",
+                    "type": "boolean"
+                },
+                "hasArchive": {
+                    "description": "Allows this post type to have archived items",
+                    "type": "boolean"
+                },
+                "labels": {
+                    "description": "Labels to display. Note that these will be made L18N ready using your theme's\ntext domain.",
+                    "properties": {
+                        "menuName": {
+                            "description": "The menu name for this post type",
+                            "type": "string"
+                        },
+                        "name": {
+                            "description": "The plural name of this post type",
+                            "type": "string"
+                        },
+                        "singularName": {
+                            "description": "The singular name of this post type",
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": {
+                    "description": "The name of the post type",
+                    "type": "string"
+                },
+                "public": {
+                    "description": "If the post type should be publicly accessible",
+                    "type": "boolean"
+                },
+                "showInRest": {
+                    "description": "Should the post type be available in rest APIs?",
+                    "type": "boolean"
+                }
+            },
+            "type": "object"
+        }
+    },
+    "properties": {
+        "$asterism": {
+            "const": true,
+            "description": "This must be set to ensure distinction from a Wordpress theme.json\nAs theme.json is necessary for WordPress Gutenberg build tools,\nit must use theme.json so that these tools don't inadvertently \nuse the theme's actual theme.json file if one is provided.",
+            "type": "boolean"
+        },
+        "$schema": {
+            "type": "string"
+        },
+        "advanced": {
+            "properties": {
+                "mode": {
+                    "const": "blockOnly",
+                    "description": "Sets the mode.\nblockOnly: Enables block-only mode - which turns Asterism into a block building toolset.",
+                    "type": "string"
+                },
+                "noGutenbergFrontend": {
+                    "description": "Attempts to prevent the gutenberg styles from loading on the client.\nNote that this may break external plugins and some WordPress plugins that\ndepend on the gutenberg styles. USE WITH CAUTION!",
+                    "type": "boolean"
+                }
+            },
+            "type": "object"
+        },
+        "allow": {
+            "description": "Controls the allowed/excluded core blocks. If allow, only the blocks in the list\nwill be available. If exclude, all blocks but those specified will be available.\nBlocks within the theme are not included. Both should not be set.",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "author": {
+            "description": "The author(s) of the theme",
+            "type": "string"
+        },
+        "authorUri": {
+            "description": "The URI for the creator's website (Where more information about\nthe theme may be made available)",
+            "type": "string"
+        },
+        "copyright": {
+            "description": "The copyright for the theme",
+            "type": "string"
+        },
+        "description": {
+            "description": "A description of this theme's purpose",
+            "type": "string"
+        },
+        "exclude": {
+            "description": "Controls the allowed/excluded core blocks. If allow, only the blocks in the list\nwill be available. If exclude, all blocks but those specified will be available.\nBlocks within the theme are not included. Both should not be set.",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "name": {
+            "description": "The name of the theme",
+            "type": "string"
+        },
+        "namespace": {
+            "description": "The namespace of the theme. This also doubles as the theme's\nfolder name if themeFolder is not provided.",
+            "type": "string"
+        },
+        "noStyle": {
+            "description": "Names of built-in Wordpress styles to remove. Use with caution, as some are\nneeded for the editor to function properly.",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "postTypes": {
+            "description": "Post types to include with the theme",
+            "items": {
+                "$ref": "#/definitions/PostType"
+            },
+            "type": "array"
+        },
+        "style.css": {
+            "description": "Specific fields for the style.css header",
+            "properties": {
+                "license": {
+                    "description": "The license for the theme",
+                    "type": "string"
+                },
+                "licenseUri": {
+                    "description": "The URI to the license text document",
+                    "type": "string"
+                },
+                "uri": {
+                    "description": "The URI of the theme (Where it's available)",
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "textDomain": {
+            "description": "The text domain for this theme",
+            "type": "string"
+        },
+        "themeFolder": {
+            "description": "Overrides the output folder name of the theme",
+            "type": "string"
+        },
+        "version": {
+            "description": "The version of the theme",
+            "type": "string"
+        }
+    },
+    "type": "object"
+}
+

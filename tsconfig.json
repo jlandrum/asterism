@@ -21,6 +21,7 @@
     ]
   },
   "include": [
+		"types.d.ts",
     "**/*.d.ts",
     "**/*.json",
     "src/**/*",

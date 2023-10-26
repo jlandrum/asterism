@@ -78,6 +78,7 @@ export async function createTheme(theme: Partial<ThemeData> = {}) {
 
 	const themeOut: Partial<ThemeData> = {...theme};
 
+	themeOut['$schema'] = "./node_modules/@yesand/asterism/theme.schema.json";
 	themeOut['$asterism'] = true;
 	themeOut.name = await askForInput('Theme Name: ', theme.name, 'Asterism Theme');
 	themeOut.copyright = await askForInput('Copyright: ', theme.copyright, `©️ ${new Date().getFullYear()}`);

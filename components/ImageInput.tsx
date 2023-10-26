@@ -1,4 +1,4 @@
-import React, { useState, useId, useRef } from "@wordpress/element";
+import React, { useState, useId, useRef, useEffect } from "@wordpress/element";
 
 import { __ } from "@wordpress/i18n";
 import { EditOnly, SaveOnly } from "./SwiftState";
@@ -28,8 +28,6 @@ import {
 	media,
 	Icon
 } from "@wordpress/icons";
-
-import "./ImageInput.scss";
 
 export interface Media {
   id: number;
@@ -69,7 +67,7 @@ const ImageInputEditor = ({
         </button>
       </div>
       {!useSlot && toolbar && (
-        <Popover anchor={ref.current} onClose={() => setToolbar(false)}>
+        <Popover anchor={ref.current} onClose={() => setToolbar(false)} placement="top-start" variant="unstyled">
           <Toolbar label="Image Input">
             <Slot name={internalSlot}></Slot>
           </Toolbar>
@@ -80,12 +78,16 @@ const ImageInputEditor = ({
         onSelect={onChange}
         allowedTypes={["image"]}
         render={(props: any) => (
-          <Button ref={buttonRef} style={{display: 'none'}} icon={media} onClick={props.open} />
+          <Button
+            ref={buttonRef}
+            style={{ display: "none" }}
+            icon={media}
+            onClick={props.open}
+          />
         )}
       />
       <Fill name={internalSlot}>
-        <ToolbarGroup>
-          {/* <MediaUploadCheck> */}
+				<div className="components-toolbar-group">
           <MediaUpload
             title={"Image"}
             onSelect={(v) => {
@@ -93,16 +95,22 @@ const ImageInputEditor = ({
               setEditing(false);
             }}
             allowedTypes={["image"]}
-            render={(props: any) => <Button icon={media} onClick={() => buttonRef?.current?.click()} />}
+            render={(props: any) => (
+              <Button
+                data-toolbar-item={true}
+                className="components-toolbar-button"
+                icon={media}
+                onClick={() => buttonRef?.current?.click()}
+              />
+            )}
           />
-          {/* </MediaUploadCheck> */}
-        </ToolbarGroup>
+				</div>
       </Fill>
     </>
   );
 };
 
-const ImageInput = (props: ImageInputProps) => {
+export const ImageInput = (props: ImageInputProps) => {
   const { label = "Image", value, className, useSlot, onChange } = props;
   return (
     <>

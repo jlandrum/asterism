@@ -1,3 +1,5 @@
+@import "common";
+
 .live-text-input {
 	position: relative;
 
@@ -5,6 +7,8 @@
 		&>textarea, &::after {
 			grid-area: 1 / 1 / 2 / 2;
 		}
+
+		@include outline();
 
 		.pre {
 			white-space: pre-wrap;
@@ -15,6 +19,7 @@
 		}
 
 		textarea {
+			background-color: var(--admin-textarea-bg, transparent);
 			position: absolute;
 			inset: 0;
 			box-sizing: border-box;
@@ -24,27 +29,14 @@
 			overflow: hidden;
 			margin: 0;
 			white-space: pre-wrap;
-			background-color: transparent;
 			border: none;
-		}
-
-		&::after {
-			inset: 0;
-			content: '';
-			position: absolute;
-			border: 1px dashed white;
-			mix-blend-mode: difference;
-			pointer-events: none;
-			opacity: 0.2;
+			line-height: inherit;
 		}
 
 		&:focus-within {
 			.components-button, .popover-slot {
 				opacity: 1;
 				pointer-events: all;
-			}
-			&::after {
-				border: 1px solid transparent;
 			}
 		}
 

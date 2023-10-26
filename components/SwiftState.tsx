@@ -27,3 +27,22 @@ export class EditOnly extends React.Component<{
     return <></>;
   }
 }
+
+/**
+ * A utility element that renders only if the components within are being edited.
+ */
+export class EditOnlyWrapper extends React.Component<{
+  children: any;
+	node: string;
+	[a:string]: any;
+}> {
+  render() {
+		const { node, children, ...attrs} = this.props;
+    const Node = node;
+
+		// @ts-ignore As far as TS is aware, this isn't available - and that's fine
+    const hooksAvailable = !!this._reactInternals;
+    if (hooksAvailable) return <Node {...attrs}>{children}</Node>;
+    return <>{children}</>;
+  }
+}
