@@ -182,20 +182,22 @@ const NestedEditor = <T,>({
           ) : undefined
         )}
         {toolbar && (
-          <Popover placement="top-end">
+          <Popover placement="top-end" variant="unstyled">
             <Toolbar label="Nedted Editor" id="nestedEditor">
               {carousel && (
                 <ToolbarGroup>
-                  <ToolbarButton icon={chevronLeft} onClick={prevItem} />
-                  <ToolbarButton>
+                  <ToolbarButton icon={chevronLeft} onClick={prevItem} label="Move to Previous Item" />
+                  <ToolbarButton style={{ pointerEvents: "none" }}>
                     {carouselItem + 1} / {value.length}
                   </ToolbarButton>
-                  <ToolbarButton icon={chevronRight} onClick={nextItem} />
-									<ToolbarButton icon={close} onClick={removeCurrentItem} />
+                  <ToolbarButton icon={chevronRight} onClick={nextItem} label="Move to Next Item"/>
                 </ToolbarGroup>
               )}
               <ToolbarGroup>
-                <ToolbarButton icon={plus} onClick={addChild} />
+                {carousel && (
+                  <ToolbarButton icon={close} onClick={removeCurrentItem} label="Delete Current Item"/>
+                )}
+                <ToolbarButton icon={plus} onClick={addChild} label="Add New Item" />
               </ToolbarGroup>
             </Toolbar>
           </Popover>
