@@ -3,6 +3,7 @@ import React, { useState, useId, useRef, useEffect } from "@wordpress/element";
 import { __ } from "@wordpress/i18n";
 import { EditOnly, SaveOnly } from "../SwiftState/SwiftState";
 import {
+	BlockControls,
   MediaUpload,
 } from "@wordpress/block-editor";
 import {
@@ -11,6 +12,7 @@ import {
   Slot,
   Toolbar,
   Popover,
+	Tooltip
 } from "@wordpress/components";
 import {
 	media,
@@ -26,6 +28,7 @@ interface ImageInputProps {
   label: string;
   value?: Media;
   useSlot?: string;
+	useBlockControls?: boolean;
   className?: string;
   onChange: (value: Media) => void;
 }
@@ -35,6 +38,7 @@ const ImageInputEditor = ({
   value,
   className,
   useSlot,
+	useBlockControls,
   onChange,
 }: ImageInputProps) => {
   const [imagePopover, setImagePopover] = useState(false);
@@ -46,15 +50,30 @@ const ImageInputEditor = ({
   const id = useId();
   const internalSlot = useSlot || `image-input-toolbar-${id}`;
 
+	const ControlWrapper = useBlockControls ? BlockControls : Fill;
+	
   return (
     <>
-      <div className="image-input" onFocus={() => setToolbar(true)} ref={ref}>
-        <button className="image-input__image">
-          <img src={value?.url} alt={value?.alt} className={className} />
-        </button>
-      </div>
+      <EditOnly>
+				<img
+					src={value?.url}
+					alt={value?.alt}
+					className={className}
+					tabIndex={0}
+					onFocus={() => setToolbar(true)}
+					ref={ref}
+				/>
+      </EditOnly>
+      <SaveOnly>
+        <img src={value?.url} alt={value?.alt} className={className} />
+      </SaveOnly>
       {!useSlot && toolbar && (
-        <Popover anchor={ref.current} onClose={() => setToolbar(false)} placement="top-start" variant="unstyled">
+        <Popover
+          anchor={ref.current}
+          onClose={() => setToolbar(false)}
+          placement="top-start"
+          variant="unstyled"
+        >
           <Toolbar label="Image Input">
             <Slot name={internalSlot}></Slot>
           </Toolbar>
@@ -73,8 +92,8 @@ const ImageInputEditor = ({
           />
         )}
       />
-      <Fill name={internalSlot}>
-				<div className="components-toolbar-group">
+      <ControlWrapper controls="" name={internalSlot}>
+        <div className="components-toolbar-group">
           <MediaUpload
             title={"Image"}
             onSelect={(v) => {
@@ -84,6 +103,7 @@ const ImageInputEditor = ({
             allowedTypes={["image"]}
             render={(props: any) => (
               <Button
+	  						label={`Edit ${label}`}
                 data-toolbar-item={true}
                 className="components-toolbar-button"
                 icon={media}
@@ -91,8 +111,8 @@ const ImageInputEditor = ({
               />
             )}
           />
-				</div>
-      </Fill>
+        </div>
+      </ControlWrapper>
     </>
   );
 };

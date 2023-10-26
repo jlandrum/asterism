@@ -42,7 +42,8 @@ export const ClickDetector = ({
 			</SaveOnly>
 			<EditOnly>
 				<div ref={ref} onMouseDownCapture={() => innerClick.current = true}
-                			 onTouchStartCapture={() => innerClick.current = true}>
+                			 onTouchStartCapture={() => innerClick.current = true}
+						 style={{display: 'contents'}}>
 					{children}
 				</div>
 			</EditOnly>

@@ -1,22 +1,4 @@
 .nested-components {
-	// &::after {
-	// 	border: 1px dashed white;
-	// 	border-radius: 5px;
-	// 	inset: 0;
-	// 	content: '';
-	// 	position: absolute;
-	// 	mix-blend-mode: difference;
-	// 	opacity: 0.2;
-	// 	pointer-events: none;
-	// }
-}
-
-.nested-components__button {
-	align-self: center;
-	max-width: 36px;
-}
-
-/** Temporary fix to popovers with slots. May break other things - use with caution */
-.components-popover__content {
-	width: auto !important;
+	width: 100%;
+	height: 100%;
 }

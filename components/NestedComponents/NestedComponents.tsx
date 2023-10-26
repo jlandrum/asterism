@@ -6,7 +6,6 @@ import React, {
 } from "@wordpress/element";
 
 import { EditOnly, EditOnlyWrapper, SaveOnly } from "../SwiftState/SwiftState";
-import { plus } from '@wordpress/icons';
 import {
 	Button,
   Popover,
@@ -17,7 +16,7 @@ import {
   SlotFillProvider,
 } from "@wordpress/components";
 
-import { chevronUp, chevronDown, chevronLeft, chevronRight, close } from "@wordpress/icons";
+import { chevronUp, chevronDown, chevronLeft, chevronRight, close, plus } from "@wordpress/icons";
 import { ClickDetector } from "../ClickDetector/ClickDetector";
 
 /**
@@ -33,6 +32,7 @@ interface NestedComponentsProps<T> {
   horizontal?: boolean;
 	maxItems?: number;
 	element?: string;
+	carousel?: boolean;
   onChange: (value: T[]) => void;
   children: (
     value: T,
@@ -49,14 +49,17 @@ const NestedEditor = <T,>({
   className,
   slotName,
 	maxItems,
+	carousel,
 	horizontal = false,
   onChange,
   children,
 }: NestedComponentsProps<T>) => {
-  const [toolbar, setToolbar] = useState(-1);
+  const [childToolbar, setChildToolbar] = useState(-1);
+	const [toolbar, setToolbar] = useState(false);
+	const [carouselItem, setCarouselItem] = useState(0);
+
 	const popoverAnchor = useRef<any[]>([]);
 	const host = useRef<any>([]);
-	const innerClick = useRef<boolean>(false);
 
   function addChild() {
     onChange([...value, { ...emptyObject }]);
@@ -64,14 +67,14 @@ const NestedEditor = <T,>({
 
   function removeChild(atIndex: number) {
     onChange(value.filter((_, index) => index !== atIndex));
-		setToolbar(-1);
+		setChildToolbar(-1);
   }
 
   function moveChild(fromIndex: number, toIndex: number) {
     const newChildren = [...value];
     const [child] = newChildren.splice(fromIndex, 1);
     newChildren.splice(toIndex, 0, child);
-		setToolbar(toIndex);
+		setChildToolbar(toIndex);
     onChange(newChildren);
   }
 
@@ -94,78 +97,109 @@ const NestedEditor = <T,>({
   };
 
 	 const handleFocus = (index: number) => () => {
-		if (toolbar !== index) {
-			setToolbar(index)
+		if (childToolbar !== index) {
+			setChildToolbar(index)
 		}
 	}
 
+	const nextItem = () => {
+		setCarouselItem((carouselItem + 1) % value.length);
+	}
+
+	const prevItem = () => {
+		setCarouselItem((carouselItem - 1 + value.length) % value.length);
+	}
+
+	const removeCurrentItem = () => {
+		removeChild(carouselItem);
+		setCarouselItem((carouselItem - 1 + value.length) % value.length);
+	}
+
   return (
-    <ClickDetector onOuterClick={() => setToolbar(-1)}>
+    <ClickDetector
+      onOuterClick={() => {
+        setChildToolbar(-1);
+        setToolbar(false);
+      }}
+    >
       <div
-        className={`nested-components ${className}`}
+        className={`nested-components ${className ? className : ""}`}
         tabIndex={0}
         ref={host}
-        onMouseDownCapture={() => innerClick.current = true}
+        onClick={() => setToolbar(true)}
       >
-        {value.map((v, i) => (
-          <div
-            key={i}
-            tabIndex={0}
-            onFocus={handleFocus(i)}
-            ref={(ref) => (popoverAnchor.current[i] = ref)}
-          >
-            {toolbar === i && (
-              <Popover
-                // onClose={() => setToolbar(-1)}
-                placement="top-start"
-                anchor={popoverAnchor.current[i]}
-                focusOnMount={false}
-                variant="unstyled"
-              >
-                <Toolbar
-                  label="NestedEditor"
-                  id="nestedEditor"
-                  className={toolbar === i ? "open" : ""}
+        {value.map((v, i) =>
+          (carousel && i === carouselItem) || !carousel ? (
+            <div
+              key={i}
+              tabIndex={0}
+              onFocus={handleFocus(i)}
+              ref={(ref) => (popoverAnchor.current[i] = ref)}
+            >
+              {childToolbar === i && !carousel && (
+                <Popover
+                  // onClose={() => setToolbar(-1)}
+                  placement="top-start"
+                  anchor={popoverAnchor.current[i]}
+                  focusOnMount={false}
+                  variant="unstyled"
                 >
-                  <ToolbarGroup>
-                    <ToolbarButton
-                      icon={close}
-                      onClick={() => {
-                        removeChild(i);
-                      }}
-                    ></ToolbarButton>
-                  </ToolbarGroup>
-                  <ToolbarGroup>
-                    <ToolbarButton
-                      icon={horizontal ? chevronLeft : chevronUp}
-                      onClick={() => {
-                        moveUp(i);
-                      }}
-                    ></ToolbarButton>
-                    <ToolbarButton
-                      icon={horizontal ? chevronRight : chevronDown}
-                      onClick={() => {
-                        moveDown(i);
-                      }}
-                    ></ToolbarButton>
-                  </ToolbarGroup>
-                  {slotName && (
-                    <Slot name={`${slotName}_${i}`} bubblesVirtually />
-                  )}
-                </Toolbar>
-              </Popover>
-            )}
-            {children(v, i, `${slotName}_${i}`, updateChild(i))}
-          </div>
-        ))}
-        <Button
-          disabled={!!(maxItems && value.length >= maxItems)}
-          icon={plus}
-          variant="tertiary"
-          onClick={addChild}
-          style={{ background: "white" }}
-          className="nested-components__button"
-        />
+                  <Toolbar
+                    label="Nested Editor Child"
+                    id="nestedEditor"
+                    className={childToolbar === i ? "open" : ""}
+                  >
+                    <ToolbarGroup>
+                      <ToolbarButton
+                        icon={close}
+                        onClick={() => {
+                          removeChild(i);
+                        }}
+                      ></ToolbarButton>
+                    </ToolbarGroup>
+                    <ToolbarGroup>
+                      <ToolbarButton
+                        icon={horizontal ? chevronLeft : chevronUp}
+                        onClick={() => {
+                          moveUp(i);
+                        }}
+                      ></ToolbarButton>
+                      <ToolbarButton
+                        icon={horizontal ? chevronRight : chevronDown}
+                        onClick={() => {
+                          moveDown(i);
+                        }}
+                      ></ToolbarButton>
+                    </ToolbarGroup>
+                    {slotName && (
+                      <Slot name={`${slotName}_${i}`} bubblesVirtually />
+                    )}
+                  </Toolbar>
+                </Popover>
+              )}
+              {children(v, i, `${slotName}_${i}`, updateChild(i))}
+            </div>
+          ) : undefined
+        )}
+        {toolbar && (
+          <Popover placement="top-end">
+            <Toolbar label="Nedted Editor" id="nestedEditor">
+              {carousel && (
+                <ToolbarGroup>
+                  <ToolbarButton icon={chevronLeft} onClick={prevItem} />
+                  <ToolbarButton>
+                    {carouselItem + 1} / {value.length}
+                  </ToolbarButton>
+                  <ToolbarButton icon={chevronRight} onClick={nextItem} />
+									<ToolbarButton icon={close} onClick={removeCurrentItem} />
+                </ToolbarGroup>
+              )}
+              <ToolbarGroup>
+                <ToolbarButton icon={plus} onClick={addChild} />
+              </ToolbarGroup>
+            </Toolbar>
+          </Popover>
+        )}
       </div>
     </ClickDetector>
   );
