@@ -219,51 +219,50 @@ const NestedEditor = <T,>({
       )}
       {toolbar && (
         <Popover placement="top-end" variant="unstyled">
-					<div className="nested-components__carousel-toolbar">
-						<Toolbar label="Nested Editor Commands" id="nestedEditor">
-							{carousel && (
-								<ToolbarGroup>
-									<ToolbarButton
-										icon={chevronLeft}
-										onClick={prevItem}
-										label="Move to Previous Item"
-									/>
-									<ToolbarButton style={{ pointerEvents: "none" }}>
-										{carouselItem + 1} / {value?.length || 0}
-									</ToolbarButton>
-									<ToolbarButton
-										icon={chevronRight}
-										onClick={nextItem}
-										label="Move to Next Item"
-									/>
-								</ToolbarGroup>
-							)}
-							<ToolbarGroup>
-								{carousel && (
-									<ToolbarButton
-										icon={close}
-										onClick={removeCurrentItem}
-										label="Delete Current Item"
-									/>
-								)}
-								<ToolbarButton
-									icon={plus}
-									onClick={addChild}
-									label="Add New Item"
-								/>
-							</ToolbarGroup>
-						</Toolbar>
-						<Toolbar label="Item Actions">
-							<ToolbarGroup className="nested-components__item-actions">
-								<Slot name={`${slotName}_${carouselItem}`} bubblesVirtually />
-							</ToolbarGroup>
-						</Toolbar>
-						<Toolbar label="Additional Actions">
-							<ToolbarGroup>
-								<Slot name={`${slotName}`} bubblesVirtually />
-							</ToolbarGroup>
-						</Toolbar>
-					</div>
+          <div className="nested-components__carousel-toolbar">
+            <Toolbar label="Nested Editor Commands" id="nestedEditor">
+              {carousel && (
+                <ToolbarGroup>
+                  <ToolbarButton
+                    icon={chevronLeft}
+                    onClick={prevItem}
+                    label="Move to Previous Item"
+                  />
+                  <ToolbarButton style={{ pointerEvents: "none" }}>
+                    {carouselItem + 1} / {value?.length || 0}
+                  </ToolbarButton>
+                  <ToolbarButton
+                    icon={chevronRight}
+                    onClick={nextItem}
+                    label="Move to Next Item"
+                  />
+                </ToolbarGroup>
+              )}
+              <ToolbarGroup>
+                {carousel && (
+                  <ToolbarButton
+                    icon={close}
+                    onClick={removeCurrentItem}
+                    label="Delete Current Item"
+                  />
+                )}
+                <ToolbarButton
+                  icon={plus}
+                  onClick={addChild}
+                  label="Add New Item"
+                />
+              </ToolbarGroup>
+            </Toolbar>
+            <Toolbar label="Item Actions" style={{ backgroundColor: "white" }}>
+              <Slot name={`${slotName}_${carouselItem}`} bubblesVirtually />
+            </Toolbar>
+            <Toolbar
+              label="Additional Actions"
+              style={{ backgroundColor: "white" }}
+            >
+              <Slot name={`${slotName}`} />
+            </Toolbar>
+          </div>
         </Popover>
       )}
     </div>

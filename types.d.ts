@@ -1,11 +1,18 @@
 /// <reference lib="dom" />
 
+import { useEffect, useState } from './islands/hooks';
+
 export * from './components/ImageInput/ImageInput';
 export * from './components/InnerBlocks/InnerBlocks';
 export * from './components/ImageInput/ImageInput';
 export * from './components/LiveTextInput/LiveTextInput';
 export * from './components/NestedComponents/NestedComponents';
 export * from './components/SwiftState/SwiftState';
+
+declare module '@yesand/asterism/hooks' {
+	function useState(initialState: string): (hydrate?: boolean) => [string, (value: string) => void];
+	function useEffect(callback: () => void, deps: any[]): (hydrate?: boolean) => void;
+}
 
 interface PostTypeField {
 	name: string;

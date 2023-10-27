@@ -13,7 +13,8 @@ import {
   Slot,
   Toolbar,
   Popover,
-	Tooltip
+  ToolbarButton,
+	ToolbarGroup
 } from "@wordpress/components";
 import {
 	media,
@@ -92,25 +93,23 @@ const ImageInputEditor = ({
         )}
       />
       <ControlWrapper controls="" name={internalSlot}>
-        <div className="components-toolbar-group">
-          <MediaUpload
-            title={"Image"}
-            onSelect={(v) => {
-              onChange(v);
-              setEditing(false);
-            }}
-            allowedTypes={["image"]}
-            render={(props: any) => (
-              <Button
-	  						label={`Edit ${label}`}
-                data-toolbar-item={true}
-                className="components-toolbar-button"
-                icon={media}
-                onClick={() => buttonRef?.current?.click()}
-              />
-            )}
-          />
-        </div>
+				<MediaUpload
+					title={"Image"}
+					onSelect={(v) => {
+						onChange(v);
+						setEditing(false);
+					}}
+					allowedTypes={["image"]}
+					render={(props: any) => (
+						<ToolbarButton
+							label={`Edit ${label}`}
+							data-toolbar-item={true}
+							className="components-toolbar-button"
+							icon={media}
+							onClick={() => buttonRef?.current?.click()}
+						/>
+					)}
+				/>
       </ControlWrapper>
     </>
   );
