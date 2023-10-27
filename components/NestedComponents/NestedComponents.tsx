@@ -33,15 +33,30 @@ interface ChildProps<T> {
  * @property {string} value - The object that holds the data for the nested components
  */
 interface NestedComponentsProps<T> {
+	/** The nested content */
   value: T[];
+	/** When adding a new item, this object will be used to model the new item's defaults */
   emptyObject?: T;
+	/** @inheritdoc */
   className?: string;
+	/** If provided, gives the slots an explicit name. A slot which matches the name 
+	 *  will exist at the end of the toolbar, and a numbered slot (eg., slotName_#) 
+	 *  for every item */
   slotName?: string;
+	/** If set, the buttons will reflect a horizontal layout */
   horizontal?: boolean;
+	/** Limits the maximum number of items that can be added */
   maxItems?: number;
+	/** Overrides the base element to use */
   element?: string;
+	/** If true, the individual items will no longer have their own toolbar. Instead,
+	 *  only one item will be displayed and any toolbar items hoisted into the nested
+	 *  toolbar will appear in the main toolbar.
+	 */
   carousel?: boolean;
+	/** A callback that sends the most current version of the data */
   onChange: (value: T[]) => void;
+	/** @inheritdoc */
   children: (props: ChildProps<T>) => React.Element;
   [remaining: string]: any;
 }
@@ -50,19 +65,19 @@ const NestedEditor = <T,>({
   value,
   emptyObject = {} as T,
   className,
-  slotName,
+  slotName = "nested-editor",
 	maxItems,
 	carousel,
 	horizontal = false,
   onChange,
   children,
+	...remaining
 }: NestedComponentsProps<T>) => {
   const [childToolbar, setChildToolbar] = useState(-1);
 	const [toolbar, setToolbar] = useState(false);
 	const [carouselItem, setCarouselItem] = useState(0);
 	const popoverAnchor = useRef<any[]>([]);
-  const host = useRef<any>([]);
-	
+  
 	useEffect(() => {
 		if (!value || value.length === 0) {
 			onChange([{ ...emptyObject }]);
@@ -73,7 +88,7 @@ const NestedEditor = <T,>({
 		}
 	}, [value]);
 
-	const clickDetector = useClickDetector(host, () => {
+	const clickDetector = useClickDetector(() => {
     setChildToolbar(-1);
     setToolbar(false);
   }, () => {
@@ -142,9 +157,9 @@ const NestedEditor = <T,>({
     <div
       className={`nested-components ${className ? className : ""}`}
       tabIndex={0}
-      ref={host}
       onClick={() => setToolbar(true)}
       {...clickDetector}
+      {...remaining}
     >
       {(value || []).map((v, i) =>
         (carousel && i === carouselItem) || !carousel ? (
@@ -189,51 +204,66 @@ const NestedEditor = <T,>({
                       }}
                     ></ToolbarButton>
                   </ToolbarGroup>
-                  {slotName && (
-                    <Slot name={`${slotName}_${i}`} bubblesVirtually />
-                  )}
+                  <Slot name={`${slotName}_${i}`} bubblesVirtually />
                 </Toolbar>
               </Popover>
             )}
-            {children({ value: v, index: i, slot: `${slotName}_${i}`, update: updateChild(i)})}
+            {children({
+              value: v,
+              index: i,
+              slot: `${slotName}_${i}`,
+              update: updateChild(i),
+            })}
           </div>
         ) : undefined
       )}
       {toolbar && (
         <Popover placement="top-end" variant="unstyled">
-          <Toolbar label="Nedted Editor" id="nestedEditor">
-            {carousel && (
-              <ToolbarGroup>
-                <ToolbarButton
-                  icon={chevronLeft}
-                  onClick={prevItem}
-                  label="Move to Previous Item"
-                />
-                <ToolbarButton style={{ pointerEvents: "none" }}>
-                  {carouselItem + 1} / {value?.length || 0}
-                </ToolbarButton>
-                <ToolbarButton
-                  icon={chevronRight}
-                  onClick={nextItem}
-                  label="Move to Next Item"
-                />
-              </ToolbarGroup>
-            )}
-            <ToolbarGroup>
-              {carousel && (
-                <ToolbarButton
-                  icon={close}
-                  onClick={removeCurrentItem}
-                  label="Delete Current Item"
-                />
-              )}
-              <ToolbarButton
-                icon={plus}
-                onClick={addChild}
-                label="Add New Item"
-              />
-            </ToolbarGroup>
-          </Toolbar>
+					<div className="nested-components__carousel-toolbar">
+						<Toolbar label="Nested Editor Commands" id="nestedEditor">
+							{carousel && (
+								<ToolbarGroup>
+									<ToolbarButton
+										icon={chevronLeft}
+										onClick={prevItem}
+										label="Move to Previous Item"
+									/>
+									<ToolbarButton style={{ pointerEvents: "none" }}>
+										{carouselItem + 1} / {value?.length || 0}
+									</ToolbarButton>
+									<ToolbarButton
+										icon={chevronRight}
+										onClick={nextItem}
+										label="Move to Next Item"
+									/>
+								</ToolbarGroup>
+							)}
+							<ToolbarGroup>
+								{carousel && (
+									<ToolbarButton
+										icon={close}
+										onClick={removeCurrentItem}
+										label="Delete Current Item"
+									/>
+								)}
+								<ToolbarButton
+									icon={plus}
+									onClick={addChild}
+									label="Add New Item"
+								/>
+							</ToolbarGroup>
+						</Toolbar>
+						<Toolbar label="Item Actions">
+							<ToolbarGroup className="nested-components__item-actions">
+								<Slot name={`${slotName}_${carouselItem}`} bubblesVirtually />
+							</ToolbarGroup>
+						</Toolbar>
+						<Toolbar label="Additional Actions">
+							<ToolbarGroup>
+								<Slot name={`${slotName}`} bubblesVirtually />
+							</ToolbarGroup>
+						</Toolbar>
+					</div>
         </Popover>
       )}
     </div>
@@ -260,10 +290,14 @@ export const NestedComponents = <T,>(props: NestedComponentsProps<T>) => {
 	return (
     <>
       <SaveOnly>
-        {createElement(element, { className, ...remaining }, (value || []).map((v, i) => children({ value: v, index: i })))}
+        {createElement(
+          element,
+          { className, ...remaining },
+          (value || []).map((v, i) => children({ value: v, index: i }))
+        )}
       </SaveOnly>
-      <EditOnly {...remaining}>
-        <NestedEditor {...props} />
+      <EditOnly>
+        <NestedEditor {...props} {...remaining} />
       </EditOnly>
     </>
   );

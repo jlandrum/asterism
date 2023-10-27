@@ -63,12 +63,13 @@ export const ClickDetector = ({
  *          handlers that should be applied to the target element.
  */
 export const useClickDetector = (
-  ref: React.MutableRefObject<HTMLElement>,
   onOuterClick?: () => void,
   onInnerClick?: () => void
 ) => {
+	const ref = useRef<any>();
   const innerClick = useRef<boolean>(false);
-	const setInnerClick = () => (innerClick.current = true);
+	const setInnerClick = () => { innerClick.current = true; console.error('hit') };
+	const editor = document.querySelector('[name=editor-canvas]')?.contentDocument;
 
   useEffect(() => {
     const handleDocumentBlur = (event: any) => {
@@ -81,15 +82,24 @@ export const useClickDetector = (
       innerClick.current = false;
     };
 
+		console.error(document);
+
     document.addEventListener("mousedown", handleDocumentBlur);
     document.addEventListener("touchstart", handleDocumentBlur);
+		editor?.addEventListener("mousedown", handleDocumentBlur);
+    editor?.addEventListener("touchstart", handleDocumentBlur);
+		console.error('MOUNTED');
     return () => {
+			console.error('UNMOUNTED');
       document.removeEventListener("mousedown", handleDocumentBlur);
       document.removeEventListener("touchstart", handleDocumentBlur);
+			document?.addEventListener("mousedown", handleDocumentBlur);
+			document?.addEventListener("touchstart", handleDocumentBlur);
     };
-  }, [ref]);
+  }, []);
 
 	return {
+		ref,
 		onMouseDownCapture: setInnerClick,
 		onTouchStartCapture: setInnerClick,
 	}

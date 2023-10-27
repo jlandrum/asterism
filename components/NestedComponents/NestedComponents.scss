@@ -1,4 +1,10 @@
 .nested-components {
 	min-width: 100px;
 	min-height: 100px;
+
+	&__carousel-toolbar {
+		display: flex;
+		flex-direction: row;
+		gap: 8px;
+	}
 }

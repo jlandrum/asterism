@@ -1,4 +1,5 @@
 import React, { useState, useId, useRef, useEffect } from "@wordpress/element";
+import { CSSProperties } from "react";
 
 import { __ } from "@wordpress/i18n";
 import { EditOnly, SaveOnly } from "../SwiftState/SwiftState";
@@ -28,8 +29,9 @@ interface ImageInputProps {
   label: string;
   value?: Media;
   useSlot?: string;
-	useBlockControls?: boolean;
+  useBlockControls?: boolean;
   className?: string;
+  style?: CSSProperties;
   onChange: (value: Media) => void;
 }
 
@@ -37,6 +39,7 @@ const ImageInputEditor = ({
   label = "Image",
   value,
   className,
+	style,
   useSlot,
 	useBlockControls,
   onChange,
@@ -54,19 +57,15 @@ const ImageInputEditor = ({
 	
   return (
     <>
-      <EditOnly>
-				<img
-					src={value?.url}
-					alt={value?.alt}
-					className={className}
-					tabIndex={0}
-					onFocus={() => setToolbar(true)}
-					ref={ref}
-				/>
-      </EditOnly>
-      <SaveOnly>
-        <img src={value?.url} alt={value?.alt} className={className} />
-      </SaveOnly>
+			<img
+				src={value?.url}
+				alt={value?.alt}
+				className={className}
+				tabIndex={0}
+				onFocus={() => setToolbar(true)}
+				ref={ref}
+				style={style}
+			/>
       {!useSlot && toolbar && (
         <Popover
           anchor={ref.current}
@@ -127,14 +126,14 @@ const ImageInputEditor = ({
  * @param useBlockControls Whether to use block controls instead of a slot fill or the built in toolbar
  */
 export const ImageInput = (props: ImageInputProps) => {
-  const { label = "Image", value, className, useSlot, onChange } = props;
+  const { label = "Image", value, className, style, useSlot, onChange } = props;
   return (
     <>
       <EditOnly>
         <ImageInputEditor {...props} />
       </EditOnly>
       <SaveOnly>
-        <img className={className} src={value?.url} alt={value?.alt} />
+        <img className={className} src={value?.url} alt={value?.alt} style={style} />
       </SaveOnly>
     </>
   );
