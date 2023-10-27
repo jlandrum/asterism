@@ -117,6 +117,15 @@ const ImageInputEditor = ({
   );
 };
 
+/**
+ * Allows selecting an image.
+ * @param label The label to display in the toolbar
+ * @param value The current value of the image
+ * @param className The class name to apply to the image
+ * @param onChange A callback to trigger when the image is changed
+ * @param useSlot A slot to render the toolbar in
+ * @param useBlockControls Whether to use block controls instead of a slot fill or the built in toolbar
+ */
 export const ImageInput = (props: ImageInputProps) => {
   const { label = "Image", value, className, useSlot, onChange } = props;
   return (

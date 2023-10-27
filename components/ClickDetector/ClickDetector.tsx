@@ -1,52 +1,96 @@
-import { useRef,useEffect } from "@wordpress/element";
+import { useRef, useEffect } from "@wordpress/element";
 import { SaveOnly, EditOnly } from "../SwiftState/SwiftState";
 
 interface ClickDetectorProps {
-	onOuterClick?: () => void;
-	onInnerClick?: () => void;
-	children: any;
+  onOuterClick?: () => void;
+  onInnerClick?: () => void;
+	target: React.MutableRefObject<HTMLElement>;
+  children: any;
 }
 
 export const ClickDetector = ({
-	onOuterClick,
-	onInnerClick,
-	children,
+  onOuterClick,
+  onInnerClick,
+	target,
+  children,
 }: ClickDetectorProps) => {
-	const ref = useRef<any>();
-	const innerClick = useRef<boolean>(false);
+  const ref = useRef<any>();
+  const innerClick = useRef<boolean>(false);
 
-	useEffect(() => {
-		const handleDocumentBlur = (event: any) => {
-			const { target: blurredElement, currentTarget: documentElement } =
-				event;
-			if (!ref.current?.contains?.(blurredElement) && !innerClick.current) {
-				onOuterClick?.();
-			} else {
-				onInnerClick?.();
-			}
-			innerClick.current = false;
-		};
+  useEffect(() => {
+    const handleDocumentBlur = (event: any) => {
+      const { target: blurredElement } = event;
+      if (!ref.current?.contains?.(blurredElement) && !innerClick.current) {
+        onOuterClick?.();
+      } else {
+        onInnerClick?.();
+      }
+      innerClick.current = false;
+    };
 
-		document.addEventListener("mousedown", handleDocumentBlur);
-		document.addEventListener("touchstart", handleDocumentBlur);
-		return () => {
-			document.removeEventListener("mousedown", handleDocumentBlur);
-			document.removeEventListener("touchstart", handleDocumentBlur);
-		};
-	}, []);
+    document.addEventListener("mousedown", handleDocumentBlur);
+    document.addEventListener("touchstart", handleDocumentBlur);
+    return () => {
+      document.removeEventListener("mousedown", handleDocumentBlur);
+      document.removeEventListener("touchstart", handleDocumentBlur);
+    };
+  }, []);
 
-	return (
+  return (
     <>
-      <SaveOnly>
-				{children}
-			</SaveOnly>
-			<EditOnly>
-				<div ref={ref} onMouseDownCapture={() => innerClick.current = true}
-                			 onTouchStartCapture={() => innerClick.current = true}
-						 style={{display: 'contents'}}>
-					{children}
-				</div>
-			</EditOnly>
+      <SaveOnly>{children}</SaveOnly>
+      <EditOnly>
+        <div
+          ref={ref}
+          onMouseDownCapture={() => (innerClick.current = true)}
+          onTouchStartCapture={() => (innerClick.current = true)}
+          style={{ display: "contents" }}
+        >
+          {children}
+        </div>
+      </EditOnly>
     </>
   );
-}
+};
+
+/**
+ * Watches for clicks outside of a target element. Follows the React 
+ * tree, allowing for nested click detectors to work across portals.
+ * @param ref The target element to watch for touch events
+ * @param onOuterClick A callback to trigger on outer click events
+ * @param onInnerClick A callback to trigger on inner click events
+ * @returns An object with the onMouseDownCapture and onTouchStartCapture 
+ *          handlers that should be applied to the target element.
+ */
+export const useClickDetector = (
+  ref: React.MutableRefObject<HTMLElement>,
+  onOuterClick?: () => void,
+  onInnerClick?: () => void
+) => {
+  const innerClick = useRef<boolean>(false);
+	const setInnerClick = () => (innerClick.current = true);
+
+  useEffect(() => {
+    const handleDocumentBlur = (event: any) => {
+      const { target: blurredElement} = event;
+      if (!ref.current?.contains?.(blurredElement) && !innerClick.current) {
+        onOuterClick?.();
+      } else {
+        onInnerClick?.();
+      }
+      innerClick.current = false;
+    };
+
+    document.addEventListener("mousedown", handleDocumentBlur);
+    document.addEventListener("touchstart", handleDocumentBlur);
+    return () => {
+      document.removeEventListener("mousedown", handleDocumentBlur);
+      document.removeEventListener("touchstart", handleDocumentBlur);
+    };
+  }, [ref]);
+
+	return {
+		onMouseDownCapture: setInnerClick,
+		onTouchStartCapture: setInnerClick,
+	}
+};
