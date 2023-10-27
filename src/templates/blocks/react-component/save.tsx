@@ -6,7 +6,7 @@ export default function save({ attributes }: any) {
   return (
 		<$$component$$
 			{...attributes}
-			blockProps={useBlockProps.save()}
+			blockProps={useBlockProps.save}
 		/>
   );
 }

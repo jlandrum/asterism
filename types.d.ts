@@ -23,6 +23,8 @@ interface Style {
 	version?: string;
 	/** Indicates the style should load in the footer */
 	footer?: boolean;
+	/** Indicates if the style is for the editor */
+	editorStyle?: boolean;
 }
 
 interface PostType {

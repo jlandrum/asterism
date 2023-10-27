@@ -11,7 +11,7 @@ interface BlockCreateOptions {
 	description?: string;
 	icon?: string;
 	category?: string;
-	type: 'dynamic' | 'static';
+	template: string;
 }
 
 function replaceTokens(tokens: any, text: string) {
@@ -21,11 +21,11 @@ function replaceTokens(tokens: any, text: string) {
 }
 
 export async function createBlock({title, slug, ...options}: BlockCreateOptions) {
-	const templatePath = `${__dirname}/templates/blocks/${options.type}`;
+	const templatePath = `${__dirname}/templates/blocks/${options.template}`;
 	const outPath = `./blocks/${slug}/`;
 
 	if (!existsSync(templatePath)) {
-		error(`Invalid block type "${options.type}". Valid types are "static" and "dynamic".`);
+		error(`Invalid block template "${options.template}".`);
 		return;
 	}
 

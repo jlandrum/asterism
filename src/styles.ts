@@ -40,20 +40,8 @@ ${Object.keys(themeDetails).map(key => `${key}: ${themeDetails[key]}`).join('\n'
  * @returns 
  */
 export async function buildCss(file: string): Promise<string> {
-  const styles = scss.compile(`css/${file}`, { style: "compressed" });
-  return styles.css;
-}
-
-/**
- * Generates the theme's style editor CSS as a string
- * @returns 
- */
-export async function buildEditorCss(): Promise<string|undefined> {
-	const themeFile = Bun.file('./css/style-editor.scss');
-	if (!(await themeFile.exists())) {
-		return undefined;
-	}
-  const styles = scss.compile('./css/style-editor.scss', { style: "compressed" });
+	console.error(file);
+  const styles = scss.compile(`${file}`, { style: "compressed" });
   return styles.css;
 }
 
@@ -62,21 +50,9 @@ export async function buildEditorCss(): Promise<string|undefined> {
  */
 export async function writeThemeStylesheet() {
   const header = await generateThemeHeader();
-	const theme = getTheme();
-	let baseStyles = '';
-
-	// If the user has specified theme.scss, don't include it into the theme stylesheet.
-	if (!theme.styles?.find((style) => style.name === 'theme.scss')) {
-		baseStyles = await buildCss('./css/theme.scss');
-	}
-
-	const editorStyles = await buildEditorCss();
-
+	
   log(chalk.bold('theme.css successfully built.'));
-	if (editorStyles) {	
-		await writeThemeFile('style-editor.css', editorStyles);
-	}
-	await writeThemeFile('style.css', baseStyles ? `${header}\n\n${baseStyles}` : `${header}`);
+	await writeThemeFile('style.css', `${header}`);
 }
 
 /**
@@ -87,11 +63,13 @@ export async function writeThemeStyles() {
 
 	if (theme.styles) {
 		for (const style of theme.styles) {
-			if (!await Bun.file(`css/${style.name}`).exists()) {
+			const themeFile = `css/${style.name}`;
+
+			if (!await Bun.file(themeFile).exists()) {
 				throw new Error(`Source file css/${style.name} does not exist.`);
 			}
 
-			const styles = style.name.endsWith('.scss') ? await buildCss(style.name) : await Bun.file(style.name).text();
+			const styles = style.name.endsWith('.scss') ? await buildCss(themeFile) : await Bun.file(themeFile).text();
 			const outputName = style.name.replace('.scss', '.css');
 
 			await writeThemeFile(`css/${outputName}`, styles);
@@ -108,24 +86,41 @@ export async function writeThemeStyles() {
  */
 export function loadStylesPhp(styles: Style[]) {
 	let out = '';
+	
 	const headerStyles = styles.filter((style) => style.footer !== true)
 		.reduce((acc, style) => { acc[style.priority] = [...(acc[style.priority] || []), style]; return acc; }, {} as { [a: string]: Style[] });
 	const footerStyles = styles.filter((style) => style.footer === true)
 		.reduce((acc, style) => { acc[style.priority] = [...(acc[style.priority] || []), style]; return acc; }, {} as {[a:string]: Style[]});
-	
-	out += Object.keys(headerStyles).map((priority) => {
-		const styles = headerStyles[priority];
-		return `add_action('wp_enqueue_scripts', function() {\n` +
-			styles.map((style) => `  wp_enqueue_style('${style.name.replace('.scss', '.css')}', get_template_directory_uri() . '/css/${style.name.replace('.scss', '.css')}', [], '${style.version || '1.0.0'}');`).join('\n') +
-			`\n}, ${priority});\n`
-	}).join('\n');	
-	
-	out += Object.keys(footerStyles).map((priority) => {
-		const styles = footerStyles[priority];
-		return `\nadd_action('get_footer', function() {\n` +
-			styles.map((style) => `  wp_enqueue_style('${style.name.replace('.scss', '.css')}', get_template_directory_uri() . '/css/${style.name.replace('.scss', '.css')}', [], '${style.version || '1.0.0'}');`).join('\n') +
-			`\n}, ${priority});\n`
-	}).join('\n');
+
+	const styleMap = {
+		frontend: {
+			header: {},
+			footer: {},
+		},
+		editor: {
+			header: {},
+			footer: {},
+		},
+	} as any;
+
+	styles.forEach((style) => {
+		const target = style.editorStyle ? 'editor' : 'frontend';
+		const section = style.footer ? 'footer' : 'header';
+		const priority = style.priority || '10';
+		styleMap[target][section][priority] = styleMap[target][section][priority] || [];
+		styleMap[target][section][priority].push(style);
+	});
+
+	Object.keys(styleMap).forEach((target) => {
+		Object.keys(styleMap[target]).forEach((section) => {
+			Object.keys(styleMap[target][section]).forEach((priority) => {
+				const action = target === 'frontend' ? 'wp_enqueue_scripts' : 'enqueue_block_editor_assets';
+				out += `add_action('${action}', function() {\n` +
+					styleMap[target][section][priority].map((style: any) => `  wp_enqueue_style('${style.name.replace('.scss', '.css')}', get_template_directory_uri() . '/css/${style.name.replace('.scss', '.css')}', [], '${style.version || '1.0.0'}');`).join('\n') +
+				`\n}, ${priority});\n`
+			});
+		});
+	});
 
 	return out;
 }

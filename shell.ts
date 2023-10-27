@@ -9,12 +9,18 @@ import { build, watch } from './src/build';
 import { initTheme } from './src/init';
 import { createBlock } from './src/create-block';
 import { getThemeBlockPaths, getThemeBlocks } from './src/blocks';
+import { readdirSync } from 'fs-extra';
 
 const { log, error } = console;
+const program = new InteractiveCommand();
+
+const templateList = (() => {
+	const fixedToTop = ['react-component', 'dynamic', 'static'];
+
+	return readdirSync(`${__dirname}/src/templates/blocks`).filter((file) => !fixedToTop.includes(file)).sort().concat(fixedToTop);
+});
 
 log(chalk.bold.blue(`Asterism ${pkg.version}`));
-
-const program = new InteractiveCommand();
 
 const blockPaths = (() => {
 	try {
@@ -71,8 +77,9 @@ program.command('create-block')
 		return value;
 	}))
 	.addOption(new InteractiveOption(
-		'--type [type]', 'Creates a block of the given type. Valid types are "static", "react-component" and "dynamic".'
-	).default('react-component'))
+		'--template [template]', 'Block template to use'
+	).default('react-component')
+		.choices(templateList()))
 	.addOption(new InteractiveOption('-d, --description [description]', 'A short description of the block'))
 	.addOption(new InteractiveOption('-i, --icon [icon]', 'The name of a dashicon to use as the block icon').choices(require('./src/dashicons.json')))
 	.addOption(new InteractiveOption('-c, --category [category]', 'The category to place the block in').choices(require('./src/categories.json')))

@@ -8,7 +8,7 @@ export default function Edit({ attributes, setAttributes }: any) {
   return (
 		<$$component$$
 			{...attributes}
-			blockProps={useBlockProps()}
+			blockProps={useBlockProps}
 			setAttributes={setAttributes}
 		/>
   );
