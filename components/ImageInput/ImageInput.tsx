@@ -14,7 +14,7 @@ import {
   Toolbar,
   Popover,
   ToolbarButton,
-	ToolbarGroup
+	ToolbarGroup,
 } from "@wordpress/components";
 import {
 	media,
@@ -45,9 +45,7 @@ const ImageInputEditor = ({
 	useBlockControls,
   onChange,
 }: ImageInputProps) => {
-  const [imagePopover, setImagePopover] = useState(false);
   const [toolbar, setToolbar] = useState(false);
-  const [editing, setEditing] = useState(false);
   const ref = useRef<any>();
 	const buttonRef = useRef<any>();
 
@@ -93,23 +91,22 @@ const ImageInputEditor = ({
         )}
       />
       <ControlWrapper controls="" name={internalSlot}>
-				<MediaUpload
-					title={"Image"}
-					onSelect={(v) => {
-						onChange(v);
-						setEditing(false);
-					}}
-					allowedTypes={["image"]}
-					render={(props: any) => (
-						<ToolbarButton
-							label={`Edit ${label}`}
-							data-toolbar-item={true}
-							className="components-toolbar-button"
-							icon={media}
-							onClick={() => buttonRef?.current?.click()}
-						/>
-					)}
-				/>
+				<ToolbarGroup>
+					<MediaUpload
+						title={"Image"}
+						onSelect={(v) => onChange(v) }
+						allowedTypes={["image"]}
+						render={(props: any) => (
+							<ToolbarButton
+								label={`Edit ${label}`}
+								data-toolbar-item={true}
+								className="components-toolbar-button"
+								icon={media}
+								onClick={() => buttonRef?.current?.click()}
+							/>
+						)}
+					/>
+				</ToolbarGroup>
       </ControlWrapper>
     </>
   );

@@ -1,4 +1,11 @@
-import React, { createContext, useState, useCallback, useRef, useEffect, useMemo } from "@wordpress/element";
+import React, {
+  createContext,
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+  useMemo,
+} from "@wordpress/element";
 import { EditOnly } from "../RenderScope/RenderScope";
 import {
   Panel,
@@ -10,11 +17,10 @@ import {
 } from "@wordpress/components";
 import { select } from "@wordpress/data";
 import { update, close } from "@wordpress/icons";
-import apiFetch from "@wordpress/api-fetch"
+import apiFetch from "@wordpress/api-fetch";
 import { addQueryArgs } from "@wordpress/url";
 
 declare const acf: any;
-
 
 interface AdvancedQuery {
   /** The list of post types to query against */
@@ -33,49 +39,50 @@ interface AdvancedQueryBuilderProps {
    *  the result of the query can be accessed.
    */
   children: any;
-	/** Called when the query has updated. */
-	onValueChange?: (value: AdvancedQuery) => void;
+  /** Called when the query has updated. */
+  onValueChange?: (value: AdvancedQuery) => void;
   [props: string]: any;
 }
 
-const AdvancedQueryBuilderContext = createContext<AdvancedQuery>(
-	{
-		postType: 'page',
-	}
-);
+const AdvancedQueryBuilderContext = createContext<AdvancedQuery>({
+  postType: "page",
+});
 
 const _AdvancedQueryBuilder = ({
   value,
   children,
-	onValueChange,
+  onValueChange,
   ...props
 }: AdvancedQueryBuilderProps) => {
-	const [queryPreview, setQueryPreview] = useState<any>([]);
+  const [queryPreview, setQueryPreview] = useState<any>([]);
 
-	const query = useMemo(() => ({
-		postType: 'page',
-		...value
-	}), [value]);
+  const query = useMemo(
+    () => ({
+      postType: "page",
+      ...value,
+    }),
+    [value]
+  );
 
-	const postTypes = select("core").getPostTypes({ per_page: -1 }) || [];
+  const postTypes = select("core").getPostTypes({ per_page: -1 }) || [];
 
-	const setQuery = (newQuery: AdvancedQuery) => {
-		onValueChange?.(newQuery);
-	}
+  const setQuery = (newQuery: AdvancedQuery) => {
+    onValueChange?.(newQuery);
+  };
 
-	//Run the query and get the results
-	useEffect(() => {
-		apiFetch({
-			path: addQueryArgs(`/wp/v2/${query.postType}`, { per_page: -1 }),
-			method: "GET",
-		})
-			.then((data) => {
-				setQueryPreview(data);
-			})
-			.catch(() => {
-				setQueryPreview([]);
-			});
-	}, [query]);
+  //Run the query and get the results
+  useEffect(() => {
+    apiFetch({
+      path: addQueryArgs(`/wp/v2/${query.postType}`, { per_page: -1 }),
+      method: "GET",
+    })
+      .then((data) => {
+        setQueryPreview(data);
+      })
+      .catch(() => {
+        setQueryPreview([]);
+      });
+  }, [query]);
 
   return (
     <div className="advanced-query-builder" {...props}>
@@ -92,26 +99,27 @@ const _AdvancedQueryBuilder = ({
               label="Post Type"
             />{" "}
           </PanelRow>
+          <PanelRow>{queryPreview.length} results.</PanelRow>
           <PanelRow>
-            {queryPreview.length} results.
-					</PanelRow>
-					<PanelRow>
-						<table>
-							<tr>
-								<th>ID</th>
-								<th>Title</th>
-								<th></th>
-							</tr>
-							{queryPreview.map((it: any) => (
-								<tr>
-									<td>{it.id}</td>
-									<td>{it.title.rendered}</td>
-									<td>
-										<Button href={`/wp-admin/post.php?post=${it.id}&action=edit`} icon={update} />
-									</td>
-								</tr>
-							))}
-						</table>
+            <table>
+              <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th></th>
+              </tr>
+              {queryPreview.map((it: any) => (
+                <tr>
+                  <td>{it.id}</td>
+                  <td>{it.title.rendered}</td>
+                  <td>
+                    <Button
+                      href={`/wp-admin/post.php?post=${it.id}&action=edit`}
+                      icon={update}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </table>
           </PanelRow>
         </PanelBody>
       </Panel>

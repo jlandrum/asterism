@@ -5,7 +5,11 @@ import React, {
   createElement,
 } from "@wordpress/element";
 
+<<<<<<< HEAD
 import { EditOnly, EditOnlyWrapper, SaveOnly } from "../RenderScope/RenderScope";
+=======
+import { EditOnly, SaveOnly } from "../RenderScope/RenderScope";
+>>>>>>> feature/advance-queries
 import {
 	Button,
   Popover,
@@ -17,15 +21,14 @@ import {
 } from "@wordpress/components";
 
 import { chevronUp, chevronDown, chevronLeft, chevronRight, close, plus } from "@wordpress/icons";
-import { ClickDetector, useClickDetector } from "../ClickDetector/ClickDetector";
-import { BlockControls } from "@wordpress/block-editor";
+import { useClickDetector } from "../ClickDetector/ClickDetector";
 import './NestedComponents.scss';
 
 interface ChildProps<T> {
 	value: T,
 	index: number,
 	slot?: string,
-	update?: (obj: Partial<T>) => void
+	update: (obj: Partial<T>) => void
 }
 /**
  * NestedComponentsProps type.
@@ -71,6 +74,7 @@ const NestedEditor = <T,>({
 	horizontal = false,
   onChange,
   children,
+	element,
 	...remaining
 }: NestedComponentsProps<T>) => {
   const [childToolbar, setChildToolbar] = useState(-1);
@@ -153,6 +157,8 @@ const NestedEditor = <T,>({
 		setCarouselItem((carouselItem - 1 + value.length) % value.length);
 	}
 
+	const Host: any = element || 'div';
+	
   return (
     <div
       className={`nested-components ${className ? className : ""}`}
@@ -163,15 +169,14 @@ const NestedEditor = <T,>({
     >
       {(value || []).map((v, i) =>
         (carousel && i === carouselItem) || !carousel ? (
-          <div
+          <Host
             key={i}
             tabIndex={0}
             onFocus={handleFocus(i)}
-            ref={(ref) => (popoverAnchor.current[i] = ref)}
+            ref={(ref: any) => (popoverAnchor.current[i] = ref)}
           >
             {childToolbar === i && !carousel && (
               <Popover
-                // onClose={() => setToolbar(-1)}
                 placement="top-start"
                 anchor={popoverAnchor.current[i]}
                 focusOnMount={false}
@@ -214,7 +219,7 @@ const NestedEditor = <T,>({
               slot: `${slotName}_${i}`,
               update: updateChild(i),
             })}
-          </div>
+          </Host>
         ) : undefined
       )}
       {toolbar && (
@@ -249,12 +254,13 @@ const NestedEditor = <T,>({
                 <ToolbarButton
                   icon={plus}
                   onClick={addChild}
+                  disabled={(maxItems && value?.length >= maxItems) || false}
                   label="Add New Item"
                 />
               </ToolbarGroup>
             </Toolbar>
             <Toolbar label="Item Actions" style={{ backgroundColor: "white" }}>
-              <Slot name={`${slotName}_${carouselItem}`} bubblesVirtually />
+              <Slot name={`${slotName}_${carouselItem}`} />
             </Toolbar>
             <Toolbar
               label="Additional Actions"
@@ -281,9 +287,8 @@ const NestedEditor = <T,>({
  *                                  The slot name will be appended with the index of the child and
  *     														  and provided to the children as a prop.
  * @param {string} props.onChange - The function to call when the children change
- * @returns {React.ReactElement} The NestedComponents component
  */
-export const NestedComponents = <T,>(props: NestedComponentsProps<T>) => {
+export const NestedComponents = <T,>(props: NestedComponentsProps<T>): React.Element => {
 	const { className, value, children, element = 'div', ...remaining } = props;
 	
 	return (
@@ -292,7 +297,7 @@ export const NestedComponents = <T,>(props: NestedComponentsProps<T>) => {
         {createElement(
           element,
           { className, ...remaining },
-          (value || []).map((v, i) => children({ value: v, index: i }))
+          (value || []).map((v, i) => children({ value: v, index: i, update: () => {} }))
         )}
       </SaveOnly>
       <EditOnly>
