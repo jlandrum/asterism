@@ -121,9 +121,9 @@ const _AdvancedQueryBuilder = ({
                 { label: "Oldest to Newest", value: "oldest" },
                 { label: "A -> Z", value: "az" },
                 { label: "Z -> A", value: "za" },
+								// TODO: Add custom ordering by field
               ]}
-              help="Exclusive will only show posts that have been flagged to be included. Inclusive will show all posts that haven't explicitly been excluded."
-              label="Query Mode"
+              label="Order By"
             />
           </PanelRow>
           <PanelRow>
