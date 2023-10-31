@@ -13,18 +13,23 @@ import {
   PanelRow,
   SelectControl,
   Button,
+	ButtonGroup,
   __experimentalGrid as Grid,
 } from "@wordpress/components";
 import { select } from "@wordpress/data";
-import { update, close } from "@wordpress/icons";
+import { update, close, pencil, unseen, seen, lock, unlock } from "@wordpress/icons";
 import apiFetch from "@wordpress/api-fetch";
 import { addQueryArgs } from "@wordpress/url";
 
 declare const acf: any;
 
 interface AdvancedQuery {
-  /** The list of post types to query against */
+	/** The post type to query */
   postType: string;
+	/** The querying method */
+	method?: 'exclusive' | 'inclusive';
+	/** The ordering method */
+	order?: 'newest' | 'oldest' | 'az' | 'za';
 }
 
 interface AdvancedQueryBuilderProps {
@@ -45,7 +50,7 @@ interface AdvancedQueryBuilderProps {
 }
 
 const AdvancedQueryBuilderContext = createContext<AdvancedQuery>({
-  postType: "page",
+  postType: "pages",
 });
 
 const _AdvancedQueryBuilder = ({
@@ -58,7 +63,7 @@ const _AdvancedQueryBuilder = ({
 
   const query = useMemo(
     () => ({
-      postType: "page",
+      postType: "pages",
       ...value,
     }),
     [value]
@@ -72,8 +77,14 @@ const _AdvancedQueryBuilder = ({
 
   //Run the query and get the results
   useEffect(() => {
+		const restEndpoint = postTypes.find((it: any) => it.slug === query.postType)?.rest_base;
     apiFetch({
-      path: addQueryArgs(`/wp/v2/${query.postType}`, { per_page: -1 }),
+      path: addQueryArgs(`/wp/v2/${restEndpoint}`, {
+        per_page: -1,
+        order:
+          query.order === "az" || query.order === "newest" ? "asc" : "desc",
+				orderby: query.order === "az" || query.order === "za" ? "title" : "date",
+      }),
       method: "GET",
     })
       .then((data) => {
@@ -87,6 +98,7 @@ const _AdvancedQueryBuilder = ({
   return (
     <div className="advanced-query-builder" {...props}>
       <Panel header="Advanced Query Builder">
+        {/* <pre>{JSON.stringify(postTypes, null, 2)}</pre> */}
         <PanelBody>
           <PanelRow>
             <SelectControl
@@ -99,23 +111,68 @@ const _AdvancedQueryBuilder = ({
               label="Post Type"
             />{" "}
           </PanelRow>
+          <PanelRow>
+            <SelectControl
+              value={query?.order}
+              // @ts-ignore
+              onChange={(value) => setQuery({ ...query, order: value })}
+              options={[
+                { label: "Newest to Oldest", value: "newest" },
+                { label: "Oldest to Newest", value: "oldest" },
+                { label: "A -> Z", value: "az" },
+                { label: "Z -> A", value: "za" },
+              ]}
+              help="Exclusive will only show posts that have been flagged to be included. Inclusive will show all posts that haven't explicitly been excluded."
+              label="Query Mode"
+            />
+          </PanelRow>
+          <PanelRow>
+            <SelectControl
+              value={query?.method}
+              // @ts-ignore
+              onChange={(value) => setQuery({ ...query, method: value })}
+              options={[
+                { label: "Exclusive", value: "exclusive" },
+                { label: "Inclusive", value: "inclusive" },
+              ]}
+              help="Exclusive will only show posts that have been flagged to be included. Inclusive will show all posts that haven't explicitly been excluded."
+              label="Query Mode"
+            />
+          </PanelRow>
           <PanelRow>{queryPreview.length} results.</PanelRow>
           <PanelRow>
-            <table>
+            <table style={{ width: "100%" }}>
               <tr>
                 <th>ID</th>
                 <th>Title</th>
-                <th></th>
+                <th>Actions</th>
               </tr>
               {queryPreview.map((it: any) => (
                 <tr>
                   <td>{it.id}</td>
                   <td>{it.title.rendered}</td>
                   <td>
-                    <Button
-                      href={`/wp-admin/post.php?post=${it.id}&action=edit`}
-                      icon={update}
-                    />
+                    <ButtonGroup style={{float: 'right'}}>
+                      <Button
+                        variant="tertiary"
+                        href={`/wp-admin/post.php?post=${it.id}&action=edit`}
+                        target="_blank"
+                        icon={pencil}
+                        label={`Edit ${it.title.rendered}`}
+                      />
+                      <Button
+                        variant="tertiary"
+                        icon={unseen}
+                        label={`${
+                          query.method === "exclusive" ? "Exclude" : "Include"
+                        }`}
+                      />
+                      <Button
+                        variant="tertiary"
+                        icon={lock}
+                        label={"Pin to Top"}
+                      />
+                    </ButtonGroup>
                   </td>
                 </tr>
               ))}
