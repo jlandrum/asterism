@@ -8,10 +8,7 @@ export * from './components/ImageInput/ImageInput';
 export * from './components/LiveTextInput/LiveTextInput';
 export * from './components/NestedComponents/NestedComponents';
 export * from './components/RenderScope/RenderScope';
-<<<<<<< HEAD
-=======
 export * from './components/AdvancedQueryBuilder/AdvancedQueryBuilder';
->>>>>>> feature/advance-queries
 
 declare module '@yesand/asterism/hooks' {
 	function useState(initialState: string): (hydrate?: boolean) => [string, (value: string) => void];

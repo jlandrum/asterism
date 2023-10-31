@@ -5,19 +5,13 @@ import React, {
   createElement,
 } from "@wordpress/element";
 
-<<<<<<< HEAD
-import { EditOnly, EditOnlyWrapper, SaveOnly } from "../RenderScope/RenderScope";
-=======
 import { EditOnly, SaveOnly } from "../RenderScope/RenderScope";
->>>>>>> feature/advance-queries
 import {
-	Button,
   Popover,
   Toolbar,
   ToolbarGroup,
   ToolbarButton,
   Slot,
-  Fill,
 } from "@wordpress/components";
 
 import { chevronUp, chevronDown, chevronLeft, chevronRight, close, plus } from "@wordpress/icons";
