@@ -1,5 +1,5 @@
 import { useRef, useEffect } from "@wordpress/element";
-import { SaveOnly, EditOnly } from "../SwiftState/SwiftState";
+import { SaveOnly, EditOnly } from "../RenderScope/RenderScope";
 
 interface ClickDetectorProps {
   onOuterClick?: () => void;
@@ -68,7 +68,8 @@ export const useClickDetector = (
 ) => {
 	const ref = useRef<any>();
   const innerClick = useRef<boolean>(false);
-	const setInnerClick = () => { innerClick.current = true; console.error('hit') };
+	const setInnerClick = () => { innerClick.current = true };
+	// @ts-ignore
 	const editor = document.querySelector('[name=editor-canvas]')?.contentDocument;
 
   useEffect(() => {
@@ -82,15 +83,11 @@ export const useClickDetector = (
       innerClick.current = false;
     };
 
-		console.error(document);
-
     document.addEventListener("mousedown", handleDocumentBlur);
     document.addEventListener("touchstart", handleDocumentBlur);
 		editor?.addEventListener("mousedown", handleDocumentBlur);
     editor?.addEventListener("touchstart", handleDocumentBlur);
-		console.error('MOUNTED');
     return () => {
-			console.error('UNMOUNTED');
       document.removeEventListener("mousedown", handleDocumentBlur);
       document.removeEventListener("touchstart", handleDocumentBlur);
 			document?.addEventListener("mousedown", handleDocumentBlur);

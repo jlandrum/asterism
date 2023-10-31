@@ -1,6 +1,5 @@
 import React, { useState, useId, useRef, useEffect } from '@wordpress/element';
-
-import { EditOnly, SaveOnly } from '../SwiftState/SwiftState';
+import { EditOnly, SaveOnly } from "../RenderScope/RenderScope";
 import {
   URLPopover as _URLPopover,
   // @ts-ignore Types are out of date
@@ -14,16 +13,21 @@ import {
   Slot,
 	Fill
 } from "@wordpress/components";
-import { ClickDetector } from '../ClickDetector/ClickDetector';
+import { ClickDetector, useClickDetector } from '../ClickDetector/ClickDetector';
 
-export interface LiveTextInputValue {
+export interface LiveTextLink {
   value: string;
   link?: { url: string; id: number; opensInNewTab?: boolean };
 }
 
-type LiveTextVarTypes = string | LiveTextInputValue;
+export const LiveTextEmptyLink = {
+	value: 'Link',
+	link: undefined,
+}
 
-interface LiveTextInputProps<T extends LiveTextVarTypes> {
+type LiveTextAllowedTypes = LiveTextLink | string;
+
+interface LiveTextInputProps<T extends LiveTextAllowedTypes> {
   value?: T;
   className?: string;
   onChange: (value: T) => void;
@@ -32,7 +36,7 @@ interface LiveTextInputProps<T extends LiveTextVarTypes> {
 	asLink?: boolean;
 }
 
-const _LiveTextInput = <T extends LiveTextVarTypes = string>({
+const _LiveTextInput = <T extends LiveTextAllowedTypes>({
   value,
   className,
   onChange,
@@ -44,6 +48,11 @@ const _LiveTextInput = <T extends LiveTextVarTypes = string>({
 	const ref = useRef<any>();
 	const id = useId();
 
+	const clickDetector = useClickDetector(
+    () => setToolbar(false),
+    () => setToolbar(true)
+  );
+
 	useEffect(() => {
 		if (typeof value === 'string' && asLink) {
 			onChange({ value, link: undefined } as T);
@@ -53,12 +62,12 @@ const _LiveTextInput = <T extends LiveTextVarTypes = string>({
 	const innerSlot = useSlot || `live-text-input-toolbar-${id}`;
 
 	const unwrapValue = asLink
-		? (value as LiveTextInputValue)?.value
+		? (value as LiveTextLink)?.value
     : (value as string);
 
 	function setLink(link: T) {
 		if (asLink) {
-			onChange({ value: (value as LiveTextInputValue).value, link } as unknown as T);
+			onChange({ value: (value as LiveTextLink).value, link } as unknown as T);
 		} else {
 			onChange(value as T);
 		}
@@ -66,80 +75,77 @@ const _LiveTextInput = <T extends LiveTextVarTypes = string>({
 
 	function setValue(newValue: T) {
 		if (asLink) {
-			console.error(asLink, 'hit');
-			onChange({ link: (value as LiveTextInputValue)?.link, value: newValue } as T);
+			onChange({ link: (value as LiveTextLink)?.link, value: newValue } as T);
 		} else {
 			onChange(newValue as T);
 		}
 	}
 
   return (
-    <ClickDetector onOuterClick={() => setToolbar(false)} onInnerClick={() => setToolbar(true)}>
-      <div className="live-text-input">
-        <div className="live-text-input__content" ref={ref}>
-          <span className={`pre ${className}`}>{unwrapValue}</span>
-          <textarea
-            className={`${className}`}
-            value={unwrapValue}
-            // @ts-ignore
-            onChange={(v) => setValue(v.target.value)}
-            onFocus={() => setToolbar(true)}
-            onClick={(e) => e.stopPropagation()}
-          />
-          {!useSlot && asLink && toolbar && (
-            <Popover
-              anchor={ref.current}
-              placement="top-start"
-              variant="unstyled"
-            >
-              <Toolbar label="Live Text Input">
-                <Slot name={innerSlot} />
-              </Toolbar>
-            </Popover>
-          )}
-          {asLink && (
-            <Fill name={innerSlot}>
-              <div className="components-toolbar-group">
-                <ToolbarButton
-                  icon="admin-links"
-                  onClick={() => {
-                    setLinkPopover(true);
-                  }}
-                >
-                  {linkPopover && (
-                    <Popover
-                      onClose={() => {
-                        setLinkPopover(false);
-                      }}
-                    >
-                      <__experimentalLinkControl
-                        onChange={setLink}
-                        // Disable open in new window as it breaks gutenberg :(
-                        settings={[]}
-                        value={value && value.link ? value?.link : undefined}
-                      />
-                    </Popover>
-                  )}
-                </ToolbarButton>
-              </div>
-            </Fill>
-          )}
-        </div>
-      </div>
-    </ClickDetector>
+		<div className="live-text-input" {...clickDetector}>
+			<div className="live-text-input__content" ref={ref}>
+				<span className={`pre ${className}`}>{unwrapValue}</span>
+				<textarea
+					className={`${className}`}
+					value={unwrapValue}
+					// @ts-ignore
+					onChange={(v) => setValue(v.target.value)}
+					onFocus={() => setToolbar(true)}
+					onClick={(e) => e.stopPropagation()}
+				/>
+				{!useSlot && asLink && toolbar && (
+					<Popover
+						anchor={ref.current}
+						placement="top-start"
+						variant="unstyled"
+					>
+						<Toolbar label="Live Text Input">
+							<Slot name={innerSlot} />
+						</Toolbar>
+					</Popover>
+				)}
+				{asLink && (
+					<Fill name={innerSlot}>
+						<div className="components-toolbar-group">
+							<ToolbarButton
+								icon="admin-links"
+								onClick={() => {
+									setLinkPopover(true);
+								}}
+							>
+								{linkPopover && (
+									<Popover
+										onClose={() => {
+											setLinkPopover(false);
+										}}
+									>
+										<__experimentalLinkControl
+											onChange={setLink}
+											// Disable open in new window as it breaks gutenberg :(
+											settings={[]}
+											value={value && value.link ? value?.link : undefined}
+										/>
+									</Popover>
+								)}
+							</ToolbarButton>
+						</div>
+					</Fill>
+				)}
+			</div>
+		</div>
   );
 };
 
 /**
  * A inline text input that gives the user an indication that the text is editable.
  */
-export const LiveTextInput = <T,>(props: LiveTextInputProps<LiveTextVarTypes>) => (
+export const LiveTextInput = <T extends LiveTextAllowedTypes = string>(props: LiveTextInputProps<T>) => (
 	<>
 		<SaveOnly>
-			{props.children}
+			{props.children}test
 		</SaveOnly>
 		<EditOnly>
-		  <_LiveTextInput {...props} />
+		  <_LiveTextInput<T > {...props} />
 		</EditOnly>
 	</>
 )

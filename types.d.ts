@@ -7,7 +7,8 @@ export * from './components/InnerBlocks/InnerBlocks';
 export * from './components/ImageInput/ImageInput';
 export * from './components/LiveTextInput/LiveTextInput';
 export * from './components/NestedComponents/NestedComponents';
-export * from './components/SwiftState/SwiftState';
+export * from './components/RenderScope/RenderScope';
+export * from './components/AdvancedQueryBuilder/AdvancedQueryBuilder';
 
 declare module '@yesand/asterism/hooks' {
 	function useState(initialState: string): (hydrate?: boolean) => [string, (value: string) => void];
