@@ -5,7 +5,7 @@ import React, {
   createElement,
 } from "@wordpress/element";
 
-import { EditOnly, EditOnlyWrapper, SaveOnly } from "../SwiftState/SwiftState";
+import { EditOnly, EditOnlyWrapper, SaveOnly } from "../RenderScope/RenderScope";
 import {
 	Button,
   Popover,

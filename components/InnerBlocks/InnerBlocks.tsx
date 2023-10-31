@@ -1,5 +1,5 @@
 import React from '@wordpress/components';
-import { EditOnly, SaveOnly } from "../SwiftState/SwiftState";
+import { EditOnly, SaveOnly } from "../RenderScope/RenderScope";
 import {
   InnerBlocks as InnerBlocksIntl,
 } from "@wordpress/block-editor";

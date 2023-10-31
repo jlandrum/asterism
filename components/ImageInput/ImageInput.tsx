@@ -2,7 +2,7 @@ import React, { useState, useId, useRef, useEffect } from "@wordpress/element";
 import { CSSProperties } from "react";
 
 import { __ } from "@wordpress/i18n";
-import { EditOnly, SaveOnly } from "../SwiftState/SwiftState";
+import { EditOnly, SaveOnly } from "../RenderScope/RenderScope";
 import {
 	BlockControls,
   MediaUpload,

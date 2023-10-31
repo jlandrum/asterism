@@ -61,7 +61,7 @@ Blocks in Asterism and Gutenberg are simply React blocks. There is a catch howev
 * The component is pure
 * The component makes no hook calls
 
-This is addressed through the use of SwiftState. To use, simply import `<EditOnly>` and/or `<SaveOnly>` from `@yesand/asterism/components/SwiftState`. As the names imply, anything within `EditOnly` will only appear within the Gutenberg editor, and anything within `SaveOnly` will only appear on the frontend. If you need to use hooks, create a nested component and insert it into your block within an `EditOnly`.
+This is addressed through the use of RenderScope. To use, simply import `<EditOnly>` and/or `<SaveOnly>` from `@yesand/asterism/components/RenderScope`. As the names imply, anything within `EditOnly` will only appear within the Gutenberg editor, and anything within `SaveOnly` will only appear on the frontend. If you need to use hooks, create a nested component and insert it into your block within an `EditOnly`.
 
 The other available components make use of this, so they generally can be used without needing to directly use `EditOnly` or `SaveOnly`
 
@@ -102,7 +102,7 @@ folder name of your theme or `themeFolder` must be set in your `theme.json`.
 * The styles are automatically minified and injected into your theme's theme.css - this may change to allow creating multiple css files with automatic insertion
 * Currently, this depends on the webpack configuration provided by @wordpress/scripts. This is fine - but it depends on a lot of tools with outdated dependencies which may break things when `bun install -g` is used to add additional tools.
 * Some users have reported global packages not being properly linked in bun. This may also occur if you are not using a known shell. Be sure to add `./bun/bin` to your path if the command does not work after install.
-* The SwiftState utility uses a kludgy hack to detect if it's in save or edit mode. The Gutenberg team is looking to add hook support to the save method - at which point this utility may be deprecated.
+* The RenderScope utility uses a kludgy hack to detect if it's in save or edit mode. The Gutenberg team is looking to add hook support to the save method - at which point this utility may be deprecated.
 
 ## Planned Features
 * Support for React Islands - components that will allow React hooks to be used on the front-end.

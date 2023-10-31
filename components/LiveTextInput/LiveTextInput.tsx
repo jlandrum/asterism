@@ -1,6 +1,6 @@
 import React, { useState, useId, useRef, useEffect } from '@wordpress/element';
 
-import { EditOnly, SaveOnly } from '../SwiftState/SwiftState';
+import { EditOnly, SaveOnly } from '../RenderScope/RenderScope';
 import {
   URLPopover as _URLPopover,
   // @ts-ignore Types are out of date
@@ -14,7 +14,7 @@ import {
   Slot,
 	Fill
 } from "@wordpress/components";
-import { ClickDetector } from '../ClickDetector/ClickDetector';
+import { ClickDetector, useClickDetector } from '../ClickDetector/ClickDetector';
 
 export interface LiveTextInputValue {
   value: string;
@@ -73,60 +73,62 @@ const _LiveTextInput = <T extends LiveTextVarTypes = string>({
 		}
 	}
 
+	const clickDetector = useClickDetector(() => {
+		setToolbar(false);
+	}, () => { setToolbar(true); });
+
   return (
-    <ClickDetector onOuterClick={() => setToolbar(false)} onInnerClick={() => setToolbar(true)}>
-      <div className="live-text-input">
-        <div className="live-text-input__content" ref={ref}>
-          <span className={`pre ${className}`}>{unwrapValue}</span>
-          <textarea
-            className={`${className}`}
-            value={unwrapValue}
-            // @ts-ignore
-            onChange={(v) => setValue(v.target.value)}
-            onFocus={() => setToolbar(true)}
-            onClick={(e) => e.stopPropagation()}
-          />
-          {!useSlot && asLink && toolbar && (
-            <Popover
-              anchor={ref.current}
-              placement="top-start"
-              variant="unstyled"
-            >
-              <Toolbar label="Live Text Input">
-                <Slot name={innerSlot} />
-              </Toolbar>
-            </Popover>
-          )}
-          {asLink && (
-            <Fill name={innerSlot}>
-              <div className="components-toolbar-group">
-                <ToolbarButton
-                  icon="admin-links"
-                  onClick={() => {
-                    setLinkPopover(true);
-                  }}
-                >
-                  {linkPopover && (
-                    <Popover
-                      onClose={() => {
-                        setLinkPopover(false);
-                      }}
-                    >
-                      <__experimentalLinkControl
-                        onChange={setLink}
-                        // Disable open in new window as it breaks gutenberg :(
-                        settings={[]}
-                        value={value && value.link ? value?.link : undefined}
-                      />
-                    </Popover>
-                  )}
-                </ToolbarButton>
-              </div>
-            </Fill>
-          )}
-        </div>
-      </div>
-    </ClickDetector>
+		<div className="live-text-input" {...clickDetector}>
+			<div className="live-text-input__content" ref={ref}>
+				<span className={`pre ${className}`}>{unwrapValue}</span>
+				<textarea
+					className={`${className}`}
+					value={unwrapValue}
+					// @ts-ignore
+					onChange={(v) => setValue(v.target.value)}
+					onFocus={() => setToolbar(true)}
+					onClick={(e) => e.stopPropagation()}
+				/>
+				{!useSlot && asLink && toolbar && (
+					<Popover
+						anchor={ref.current}
+						placement="top-start"
+						variant="unstyled"
+					>
+						<Toolbar label="Live Text Input">
+							<Slot name={innerSlot} />
+						</Toolbar>
+					</Popover>
+				)}
+				{asLink && (
+					<Fill name={innerSlot}>
+						<div className="components-toolbar-group">
+							<ToolbarButton
+								icon="admin-links"
+								onClick={() => {
+									setLinkPopover(true);
+								}}
+							>
+								{linkPopover && (
+									<Popover
+										onClose={() => {
+											setLinkPopover(false);
+										}}
+									>
+										<__experimentalLinkControl
+											onChange={setLink}
+											// Disable open in new window as it breaks gutenberg :(
+											settings={[]}
+											value={value && value.link ? value?.link : undefined}
+										/>
+									</Popover>
+								)}
+							</ToolbarButton>
+						</div>
+					</Fill>
+				)}
+			</div>
+		</div>
   );
 };
 
