@@ -1,4 +1,4 @@
-import React, { useState, useId, useRef, useEffect } from '@wordpress/element';
+import React, { useState, useRef, useEffect } from '@wordpress/element';
 import { EditOnly, SaveOnly } from "../RenderScope/RenderScope";
 import {
   URLPopover as _URLPopover,
@@ -11,8 +11,11 @@ import {
   ToolbarGroup,
   ToolbarButton,
   Slot,
-	Fill
+	Fill,
 } from "@wordpress/components";
+import {
+	useInstanceId
+} from "@wordpress/compose";
 import { ClickDetector, useClickDetector } from '../ClickDetector/ClickDetector';
 
 export interface LiveTextLink {
@@ -37,7 +40,7 @@ interface LiveTextInputProps<T extends LiveTextAllowedTypes> {
 }
 
 const _LiveTextInput = <T extends LiveTextAllowedTypes>({
-  value,
+  value: _value,
   className,
   onChange,
   asLink = false,
@@ -46,20 +49,23 @@ const _LiveTextInput = <T extends LiveTextAllowedTypes>({
   const [linkPopover, setLinkPopover] = useState(false);
   const [toolbar, setToolbar] = useState(false);
 	const ref = useRef<any>();
-	const id = useId();
+	const instanceId = useInstanceId(LiveTextInput);
 
 	const clickDetector = useClickDetector(
     () => setToolbar(false),
     () => setToolbar(true)
   );
 
-	useEffect(() => {
-		if (typeof value === 'string' && asLink) {
-			onChange({ value, link: undefined } as T);
+	const value = (() => {
+		if (typeof _value === 'string' && asLink) {
+			return { value: _value, link: undefined } as T;
+		} else if (typeof _value === 'object' && !asLink) {
+			return _value.value as T;
 		}
-	}, [value]);
+		return _value;
+	})();
 
-	const innerSlot = useSlot || `live-text-input-toolbar-${id}`;
+	const innerSlot = useSlot || `live-text-input-toolbar-${instanceId}`;
 
 	const unwrapValue = asLink
 		? (value as LiveTextLink)?.value
@@ -82,57 +88,55 @@ const _LiveTextInput = <T extends LiveTextAllowedTypes>({
 	}
 
   return (
-		<div className="live-text-input" {...clickDetector}>
-			<div className="live-text-input__content" ref={ref}>
-				<span className={`pre ${className}`}>{unwrapValue}</span>
-				<textarea
-					className={`${className}`}
-					value={unwrapValue}
-					// @ts-ignore
-					onChange={(v) => setValue(v.target.value)}
-					onFocus={() => setToolbar(true)}
-					onClick={(e) => e.stopPropagation()}
-				/>
-				{!useSlot && asLink && toolbar && (
-					<Popover
-						anchor={ref.current}
-						placement="top-start"
-						variant="unstyled"
-					>
-						<Toolbar label="Live Text Input">
-							<Slot name={innerSlot} />
-						</Toolbar>
-					</Popover>
-				)}
-				{asLink && (
-					<Fill name={innerSlot}>
-						<div className="components-toolbar-group">
-							<ToolbarButton
-								icon="admin-links"
-								onClick={() => {
-									setLinkPopover(true);
-								}}
-							>
-								{linkPopover && (
-									<Popover
-										onClose={() => {
-											setLinkPopover(false);
-										}}
-									>
-										<__experimentalLinkControl
-											onChange={setLink}
-											// Disable open in new window as it breaks gutenberg :(
-											settings={[]}
-											value={value && value.link ? value?.link : undefined}
-										/>
-									</Popover>
-								)}
-							</ToolbarButton>
-						</div>
-					</Fill>
-				)}
-			</div>
-		</div>
+    <div className="live-text-input" {...clickDetector}>
+      <div className="live-text-input__content" ref={ref}>
+        <span className={`pre ${className}`}>{unwrapValue}</span>
+        <textarea
+          className={`${className}`}
+          value={unwrapValue}
+          // @ts-ignore
+          onChange={(v) => setValue(v.target.value)}
+          onFocus={() => setToolbar(true)}
+          onClick={(e) => e.stopPropagation()}
+        />
+        {!useSlot && asLink && toolbar && (
+          <Popover
+            anchor={ref.current}
+            placement="top-start"
+            variant="unstyled"
+          >
+            <Toolbar label="Live Text Input">
+              <Slot name={innerSlot} />
+            </Toolbar>
+          </Popover>
+        )}
+        {asLink && toolbar && (
+          <Fill name={innerSlot}>
+            <ToolbarButton
+              icon="admin-links"
+              onClick={() => {
+                setLinkPopover(true);
+              }}
+            >
+              {linkPopover && (
+                <Popover
+                  onClose={() => {
+                    setLinkPopover(false);
+                  }}
+                >
+                  <__experimentalLinkControl
+                    onChange={setLink}
+                    // Disable open in new window as it breaks gutenberg :(
+                    settings={[]}
+                    value={value && value.link ? value?.link : undefined}
+                  />
+                </Popover>
+              )}
+            </ToolbarButton>
+          </Fill>
+        )}
+      </div>
+    </div>
   );
 };
 
@@ -142,7 +146,7 @@ const _LiveTextInput = <T extends LiveTextAllowedTypes>({
 export const LiveTextInput = <T extends LiveTextAllowedTypes = string>(props: LiveTextInputProps<T>) => (
 	<>
 		<SaveOnly>
-			{props.children}test
+			{props.children}
 		</SaveOnly>
 		<EditOnly>
 		  <_LiveTextInput<T > {...props} />

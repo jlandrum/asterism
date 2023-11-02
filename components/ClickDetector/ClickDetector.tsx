@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "@wordpress/element";
+import { useRef, useEffect, useCallback } from "@wordpress/element";
 import { SaveOnly, EditOnly } from "../RenderScope/RenderScope";
 
 interface ClickDetectorProps {

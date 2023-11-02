@@ -3,6 +3,7 @@ import React, {
   useRef,
   useEffect,
   createElement,
+	Fragment
 } from "@wordpress/element";
 
 import { EditOnly, SaveOnly } from "../RenderScope/RenderScope";
@@ -12,9 +13,10 @@ import {
   ToolbarGroup,
   ToolbarButton,
   Slot,
+	Fill,
 } from "@wordpress/components";
 
-import { chevronUp, chevronDown, chevronLeft, chevronRight, close, plus } from "@wordpress/icons";
+import { chevronUp, chevronDown, chevronLeft, chevronRight, trash as close, plus as plus } from "@wordpress/icons";
 import { useClickDetector } from "../ClickDetector/ClickDetector";
 import './NestedComponents.scss';
 
@@ -71,46 +73,44 @@ const NestedEditor = <T,>({
 	element,
 	...remaining
 }: NestedComponentsProps<T>) => {
-  const [childToolbar, setChildToolbar] = useState(-1);
+  const [activeItem, setActiveItem] = useState(-1);
 	const [toolbar, setToolbar] = useState(false);
-	const [carouselItem, setCarouselItem] = useState(0);
 	const popoverAnchor = useRef<any[]>([]);
   
-	useEffect(() => {
-		if (!value || value.length === 0) {
-			onChange([{ ...emptyObject }]);
-		}
+	const valueSafe = !value || value.length === 0 ? [{ ...emptyObject }] : value;
 
-		if (value && value.length < carouselItem) {
-			setCarouselItem(value.length - 1);
+	useEffect(() => {
+		if (carousel && value && value.length < activeItem) {
+			setActiveItem(value.length - 1);
 		}
 	}, [value]);
-
+	
+	
 	const clickDetector = useClickDetector(() => {
-    setChildToolbar(-1);
+    setActiveItem(-1);
     setToolbar(false);
   }, () => {
 		setToolbar(true);
 	});
 	
   function addChild() {
-		if (value) {
-			onChange([...value, { ...emptyObject }]);
-		} else {
-			onChange([{ ...emptyObject }]);
-		}
+		if (valueSafe) {
+      onChange([...valueSafe, { ...emptyObject }]);
+    } else {
+      onChange([{ ...emptyObject }]);
+    }
   }
 
   function removeChild(atIndex: number) {
-    onChange(value.filter((_, index) => index !== atIndex));
-		setChildToolbar(-1);
+    onChange(valueSafe.filter((_, index) => index !== atIndex));
+		setActiveItem(-1);
   }
 
   function moveChild(fromIndex: number, toIndex: number) {
-    const newChildren = [...value];
+    const newChildren = [...valueSafe];
     const [child] = newChildren.splice(fromIndex, 1);
     newChildren.splice(toIndex, 0, child);
-		setChildToolbar(toIndex);
+		setActiveItem(toIndex);
     onChange(newChildren);
   }
 
@@ -121,35 +121,37 @@ const NestedEditor = <T,>({
 	}
 
 	function moveDown(index: number) {
-		if (index < value.length - 1) {
-			moveChild(index, index + 1);
-		}
+		if (index < valueSafe.length - 1) {
+      moveChild(index, index + 1);
+    }
 	}
 
   const updateChild = (atIndex: number) => (partialChanges: Partial<T>) => {
-    const newChildren = [...value];
+    const newChildren = [...valueSafe];
     newChildren[atIndex] = { ...newChildren[atIndex], ...partialChanges };
     onChange(newChildren);
   };
 
 	 const handleFocus = (index: number) => () => {
-		if (childToolbar !== index) {
-			setChildToolbar(index)
+		if (activeItem !== index) {
+			setActiveItem(index)
 		}
 	}
 
 	const nextItem = () => {
-		setCarouselItem((carouselItem + 1) % value.length);
+		setActiveItem((activeItem + 1) % valueSafe.length);
 	}
 
 	const prevItem = () => {
-		setCarouselItem((carouselItem - 1 + value.length) % value.length);
+		setActiveItem((activeItem - 1 + valueSafe.length) % valueSafe.length);
 	}
 
 	const removeCurrentItem = () => {
-		removeChild(carouselItem);
-		setCarouselItem((carouselItem - 1 + value.length) % value.length);
+		removeChild(activeItem);
+		setActiveItem((activeItem - 1 + valueSafe.length) % valueSafe.length);
 	}
+
+	const activeCarousel = activeItem === -1 ? 0 : Math.min(activeItem, valueSafe.length - 1);
 
 	const Host: any = element || 'div';
 	
@@ -157,54 +159,58 @@ const NestedEditor = <T,>({
     <div
       className={`nested-components ${className ? className : ""}`}
       tabIndex={0}
-      onClick={() => setToolbar(true)}
       {...clickDetector}
       {...remaining}
     >
-      {(value || []).map((v, i) =>
-        (carousel && i === carouselItem) || !carousel ? (
+      {(valueSafe || []).map((v, i) =>
+        (carousel && activeItem === i && toolbar) || !carousel ? (
           <Host
             key={i}
             tabIndex={0}
             onFocus={handleFocus(i)}
             ref={(ref: any) => (popoverAnchor.current[i] = ref)}
           >
-            {childToolbar === i && !carousel && (
+            {activeItem === i && !carousel && (
               <Popover
                 placement="top-start"
                 anchor={popoverAnchor.current[i]}
                 focusOnMount={false}
                 variant="unstyled"
               >
-                <Toolbar
-                  label="Nested Editor Child"
-                  id="nestedEditor"
-                  className={childToolbar === i ? "open" : ""}
-                >
-                  <ToolbarGroup>
-                    <ToolbarButton
-                      icon={close}
-                      onClick={() => {
-                        removeChild(i);
-                      }}
-                    ></ToolbarButton>
-                  </ToolbarGroup>
-                  <ToolbarGroup>
-                    <ToolbarButton
-                      icon={horizontal ? chevronLeft : chevronUp}
-                      onClick={() => {
-                        moveUp(i);
-                      }}
-                    ></ToolbarButton>
-                    <ToolbarButton
-                      icon={horizontal ? chevronRight : chevronDown}
-                      onClick={() => {
-                        moveDown(i);
-                      }}
-                    ></ToolbarButton>
-                  </ToolbarGroup>
-                  <Slot name={`${slotName}_${i}`} bubblesVirtually />
-                </Toolbar>
+                <div className="nested-components__carousel-toolbar">
+                  <Toolbar
+                    label="Nested Editor"
+                    id="nestedEditor"
+                    className={activeCarousel === i ? "open" : ""}
+                  >
+                    <Slot name={`${slotName}_core`} />
+                  </Toolbar>
+                  <Toolbar
+                    label="Nested Editor Commands"
+                    style={{ backgroundColor: "white" }}
+                  >
+                    <ToolbarGroup>
+                      <ToolbarButton
+                        icon={horizontal ? chevronLeft : chevronUp}
+                        label={horizontal ? "Move to Previous" : "Move Up"}
+                        onClick={() => {
+                          moveUp(i);
+                        }}
+                      ></ToolbarButton>
+                      <ToolbarButton
+                        icon={horizontal ? chevronRight : chevronDown}
+                        label={horizontal ? "Move to Next" : "Move Down"}
+                        onClick={() => {
+                          moveDown(i);
+                        }}
+                      ></ToolbarButton>
+                    </ToolbarGroup>
+                    <Slot name={`${slotName}_${activeCarousel}`} />
+                  </Toolbar>
+                  <Toolbar label="Additional Actions">
+                    <Slot name={`${slotName}`} />
+                  </Toolbar>
+                </div>
               </Popover>
             )}
             {children({
@@ -216,45 +222,14 @@ const NestedEditor = <T,>({
           </Host>
         ) : undefined
       )}
-      {toolbar && (
+      {toolbar && carousel && (
         <Popover placement="top-end" variant="unstyled">
           <div className="nested-components__carousel-toolbar">
             <Toolbar label="Nested Editor Commands" id="nestedEditor">
-              {carousel && (
-                <ToolbarGroup>
-                  <ToolbarButton
-                    icon={chevronLeft}
-                    onClick={prevItem}
-                    label="Move to Previous Item"
-                  />
-                  <ToolbarButton style={{ pointerEvents: "none" }}>
-                    {carouselItem + 1} / {value?.length || 0}
-                  </ToolbarButton>
-                  <ToolbarButton
-                    icon={chevronRight}
-                    onClick={nextItem}
-                    label="Move to Next Item"
-                  />
-                </ToolbarGroup>
-              )}
-              <ToolbarGroup>
-                {carousel && (
-                  <ToolbarButton
-                    icon={close}
-                    onClick={removeCurrentItem}
-                    label="Delete Current Item"
-                  />
-                )}
-                <ToolbarButton
-                  icon={plus}
-                  onClick={addChild}
-                  disabled={(maxItems && value?.length >= maxItems) || false}
-                  label="Add New Item"
-                />
-              </ToolbarGroup>
+              <Slot name={`${slotName}_core`} />
             </Toolbar>
             <Toolbar label="Item Actions" style={{ backgroundColor: "white" }}>
-              <Slot name={`${slotName}_${carouselItem}`} />
+              <Slot name={`${slotName}_${activeItem}`} />
             </Toolbar>
             <Toolbar
               label="Additional Actions"
@@ -264,6 +239,40 @@ const NestedEditor = <T,>({
             </Toolbar>
           </div>
         </Popover>
+      )}
+      {toolbar && activeItem >= 0 && (
+        <Fill name={`${slotName}_core`}>
+          {carousel && (
+            <ToolbarGroup>
+              <ToolbarButton
+                icon={chevronLeft}
+                onClick={prevItem}
+                label="Move to Previous Item"
+              />
+              <ToolbarButton style={{ pointerEvents: "none" }}>
+                {activeCarousel + 1} / {valueSafe?.length || 0}
+              </ToolbarButton>
+              <ToolbarButton
+                icon={chevronRight}
+                onClick={nextItem}
+                label="Move to Next Item"
+              />
+            </ToolbarGroup>
+          )}
+          <ToolbarGroup>
+            <ToolbarButton
+              icon={plus}
+              onClick={addChild}
+              disabled={(maxItems && valueSafe?.length >= maxItems) || false}
+              label="Add New Item"
+            />
+            <ToolbarButton
+              icon={close}
+              onClick={removeCurrentItem}
+              label="Delete Current Item"
+            />
+          </ToolbarGroup>
+        </Fill>
       )}
     </div>
   );
@@ -291,7 +300,7 @@ export const NestedComponents = <T,>(props: NestedComponentsProps<T>): React.Ele
         {createElement(
           element,
           { className, ...remaining },
-          (value || []).map((v, i) => children({ value: v, index: i, update: () => {} }))
+          (value || []).map((v, i) => <Fragment key={i}>{children({ value: v, index: i, update: () => {} })}</Fragment>)
         )}
       </SaveOnly>
       <EditOnly>
