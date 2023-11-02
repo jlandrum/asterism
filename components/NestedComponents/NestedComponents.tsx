@@ -163,7 +163,7 @@ const NestedEditor = <T,>({
       {...remaining}
     >
       {(valueSafe || []).map((v, i) =>
-        (carousel && activeItem === i && toolbar) || !carousel ? (
+        (carousel && activeCarousel === i) || !carousel ? (
           <Host
             key={i}
             tabIndex={0}
