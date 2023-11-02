@@ -15,6 +15,7 @@ import {
   Slot,
 	Fill,
 } from "@wordpress/components";
+import { useInstanceId } from "@wordpress/compose";
 
 import { chevronUp, chevronDown, chevronLeft, chevronRight, trash as close, plus as plus } from "@wordpress/icons";
 import { useClickDetector } from "../ClickDetector/ClickDetector";
@@ -64,7 +65,7 @@ const NestedEditor = <T,>({
   value,
   emptyObject = {} as T,
   className,
-  slotName = "nested-editor",
+  slotName: _slotName,
 	maxItems,
 	carousel,
 	horizontal = false,
@@ -76,7 +77,8 @@ const NestedEditor = <T,>({
   const [activeItem, setActiveItem] = useState(-1);
 	const [toolbar, setToolbar] = useState(false);
 	const popoverAnchor = useRef<any[]>([]);
-  
+	const instanceId = useInstanceId(NestedEditor);
+
 	const valueSafe = !value || value.length === 0 ? [{ ...emptyObject }] : value;
 
 	useEffect(() => {
@@ -152,8 +154,8 @@ const NestedEditor = <T,>({
 	}
 
 	const activeCarousel = activeItem === -1 ? 0 : Math.min(activeItem, valueSafe.length - 1);
-
 	const Host: any = element || 'div';
+	const slotName = _slotName || `nested_components_${instanceId}`; 
 	
   return (
     <div
