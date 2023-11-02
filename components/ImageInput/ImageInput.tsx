@@ -19,6 +19,7 @@ import {
 import {
 	media,
 } from "@wordpress/icons";
+import { useClickDetector } from "../ClickDetector/ClickDetector";
 
 export interface Media {
   id: number;
@@ -45,7 +46,7 @@ const ImageInputEditor = ({
 	useBlockControls,
   onChange,
 }: ImageInputProps) => {
-  const [toolbar, setToolbar] = useState(false);
+  const [showToolbar, setShowToolbar] = useState(false);
   const ref = useRef<any>();
 	const buttonRef = useRef<any>();
 
@@ -53,25 +54,21 @@ const ImageInputEditor = ({
   const internalSlot = useSlot || `image-input-toolbar-${id}`;
 
 	const ControlWrapper = useBlockControls ? BlockControls : Fill;
-	
+	const focusListener = useClickDetector(() => setShowToolbar(false), () => setShowToolbar(true));
+
   return (
     <>
-			<img
-				src={value?.url}
-				alt={value?.alt}
-				className={className}
-				tabIndex={0}
-				onFocus={() => setToolbar(true)}
-				ref={ref}
-				style={style}
-			/>
-      {!useSlot && toolbar && (
-        <Popover
-          anchor={ref.current}
-          onClose={() => setToolbar(false)}
-          placement="top-start"
-          variant="unstyled"
-        >
+      <img
+        src={value?.url}
+        alt={value?.alt}
+        className={className}
+        tabIndex={0}
+        {...focusListener}
+        ref={ref}
+        style={style}
+      />
+      {!useSlot && showToolbar && (
+        <Popover anchor={ref.current} placement="top-start" variant="unstyled">
           <Toolbar label="Image Input">
             <Slot name={internalSlot}></Slot>
           </Toolbar>
@@ -90,11 +87,11 @@ const ImageInputEditor = ({
           />
         )}
       />
-      <ControlWrapper controls="" name={internalSlot}>
+			<ControlWrapper controls="" name={internalSlot}>
 				<ToolbarGroup>
 					<MediaUpload
 						title={"Image"}
-						onSelect={(v) => onChange(v) }
+						onSelect={(v) => onChange(v)}
 						allowedTypes={["image"]}
 						render={(props: any) => (
 							<ToolbarButton
@@ -107,7 +104,7 @@ const ImageInputEditor = ({
 						)}
 					/>
 				</ToolbarGroup>
-      </ControlWrapper>
+			</ControlWrapper>
     </>
   );
 };

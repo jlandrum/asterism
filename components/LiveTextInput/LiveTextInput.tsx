@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from '@wordpress/element';
+import React, { useState, useRef, useId } from '@wordpress/element';
 import { EditOnly, SaveOnly } from "../RenderScope/RenderScope";
 import {
   URLPopover as _URLPopover,
@@ -13,10 +13,7 @@ import {
   Slot,
 	Fill,
 } from "@wordpress/components";
-import {
-	useInstanceId
-} from "@wordpress/compose";
-import { ClickDetector, useClickDetector } from '../ClickDetector/ClickDetector';
+import { useClickDetector } from '../ClickDetector/ClickDetector';
 
 export interface LiveTextLink {
   value: string;
@@ -49,7 +46,7 @@ const _LiveTextInput = <T extends LiveTextAllowedTypes>({
   const [linkPopover, setLinkPopover] = useState(false);
   const [toolbar, setToolbar] = useState(false);
 	const ref = useRef<any>();
-	const instanceId = useInstanceId(LiveTextInput);
+	const instanceId = useId();
 
 	const clickDetector = useClickDetector(
     () => setToolbar(false),
@@ -88,7 +85,7 @@ const _LiveTextInput = <T extends LiveTextAllowedTypes>({
 	}
 
   return (
-    <div className="live-text-input" {...clickDetector}>
+    <div className="live-text-input" {...clickDetector.props}>
       <div className="live-text-input__content" ref={ref}>
         <span className={`pre ${className}`}>{unwrapValue}</span>
         <textarea

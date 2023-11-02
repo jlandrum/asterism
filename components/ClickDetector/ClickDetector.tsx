@@ -1,57 +1,10 @@
-import { useRef, useEffect, useCallback } from "@wordpress/element";
-import { SaveOnly, EditOnly } from "../RenderScope/RenderScope";
-
-interface ClickDetectorProps {
-  onOuterClick?: () => void;
-  onInnerClick?: () => void;
-	target: React.MutableRefObject<HTMLElement>;
-  children: any;
-}
-
-export const ClickDetector = ({
-  onOuterClick,
-  onInnerClick,
-	target,
-  children,
-}: ClickDetectorProps) => {
-  const ref = useRef<any>();
-  const innerClick = useRef<boolean>(false);
-
-  useEffect(() => {
-    const handleDocumentBlur = (event: any) => {
-      const { target: blurredElement } = event;
-      if (!ref.current?.contains?.(blurredElement) && !innerClick.current) {
-        onOuterClick?.();
-      } else {
-        onInnerClick?.();
-      }
-      innerClick.current = false;
-    };
-
-    document.addEventListener("mousedown", handleDocumentBlur);
-    document.addEventListener("touchstart", handleDocumentBlur);
-    return () => {
-      document.removeEventListener("mousedown", handleDocumentBlur);
-      document.removeEventListener("touchstart", handleDocumentBlur);
-    };
-  }, []);
-
-  return (
-    <>
-      <SaveOnly>{children}</SaveOnly>
-      <EditOnly>
-        <div
-          ref={ref}
-          onMouseDownCapture={() => (innerClick.current = true)}
-          onTouchStartCapture={() => (innerClick.current = true)}
-          style={{ display: "contents" }}
-        >
-          {children}
-        </div>
-      </EditOnly>
-    </>
-  );
-};
+import {
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+  useState,
+} from "@wordpress/element";
 
 /**
  * Watches for clicks outside of a target element. Follows the React 
@@ -63,41 +16,48 @@ export const ClickDetector = ({
  *          handlers that should be applied to the target element.
  */
 export const useClickDetector = (
-  onOuterClick?: () => void,
-  onInnerClick?: () => void
+  onOuterClick: () => void = () => {},
+  onInnerClick: () => void = () => {},
+	deps: any[] = [],
 ) => {
-	const ref = useRef<any>();
+	const [ref, setRef] = useState<any>(undefined);
   const innerClick = useRef<boolean>(false);
 	const setInnerClick = () => { innerClick.current = true };
 	// @ts-ignore
-	const editor = document.querySelector('[name=editor-canvas]')?.contentDocument;
+	const editor = useMemo(() => document.querySelector('[name=editor-canvas]')?.contentDocument);
+	
+	const outerClickCallback = useCallback(onOuterClick, [ref, ...deps, onOuterClick]);
+	const innerClickCallback = useCallback(onInnerClick, [ref, ...deps, onInnerClick]);
 
   useEffect(() => {
     const handleDocumentBlur = (event: any) => {
-      const { target: blurredElement} = event;
-      if (!ref.current?.contains?.(blurredElement) && !innerClick.current) {
-        onOuterClick?.();
+      const { target: blurredElement } = event;
+      if (!ref?.contains?.(blurredElement) && !innerClick.current) {
+        outerClickCallback?.();
       } else {
-        onInnerClick?.();
+				innerClickCallback?.(); 
       }
       innerClick.current = false;
     };
 
     document.addEventListener("mousedown", handleDocumentBlur);
     document.addEventListener("touchstart", handleDocumentBlur);
-		editor?.addEventListener("mousedown", handleDocumentBlur);
+    editor?.addEventListener("mousedown", handleDocumentBlur);
     editor?.addEventListener("touchstart", handleDocumentBlur);
     return () => {
       document.removeEventListener("mousedown", handleDocumentBlur);
       document.removeEventListener("touchstart", handleDocumentBlur);
-			document?.addEventListener("mousedown", handleDocumentBlur);
-			document?.addEventListener("touchstart", handleDocumentBlur);
+      editor?.addEventListener("mousedown", handleDocumentBlur);
+      editor?.addEventListener("touchstart", handleDocumentBlur);
     };
-  }, []);
+  }, [ref]);
 
 	return {
 		ref,
-		onMouseDownCapture: setInnerClick,
-		onTouchStartCapture: setInnerClick,
+		props: {
+			ref: setRef,
+			onMouseDownCapture: setInnerClick,
+			onTouchStartCapture: setInnerClick,
+		}
 	}
 };
