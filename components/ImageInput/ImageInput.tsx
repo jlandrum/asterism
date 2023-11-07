@@ -102,7 +102,6 @@ const ImageInputEditor = ({
             className="components-toolbar-button"
             icon={media}
             onClick={() => {
-              console.error("hit");
               buttonRef?.current?.click();
             }}
           />
