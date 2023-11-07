@@ -114,7 +114,7 @@ export function loadStylesPhp(styles: Style[]) {
 	Object.keys(styleMap).forEach((target) => {
 		Object.keys(styleMap[target]).forEach((section) => {
 			Object.keys(styleMap[target][section]).forEach((priority) => {
-				const action = target === 'frontend' ? 'wp_enqueue_scripts' : 'enqueue_block_editor_assets';
+				const action = target === 'frontend' ? 'wp_enqueue_scripts' : 'enqueue_block_assets';
 				out += `add_action('${action}', function() {\n` +
 					styleMap[target][section][priority].map((style: any) => `  wp_enqueue_style('${style.name.replace('.scss', '.css')}', get_template_directory_uri() . '/css/${style.name.replace('.scss', '.css')}', [], '${style.version || '1.0.0'}');`).join('\n') +
 				`\n}, ${priority});\n`

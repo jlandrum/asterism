@@ -1,11 +1,16 @@
-@mixin outline() {
+@mixin outline($offset: -10px, $defaultOpacity: 0, $hoverOpacity: 0.5) {
+	&:hover::after {
+		opacity: $hoverOpacity;
+	}
+
 	&::after {
-		inset: 0;
+		inset: $offset;
 		content: '';
 		position: absolute;
-		border: 1px dashed white;
+		border: 1px dashed gray;
 		mix-blend-mode: difference;
 		pointer-events: none;
-		opacity: 0.2;
+		opacity: $defaultOpacity;
+		transition: all 300ms;
 	}
 }

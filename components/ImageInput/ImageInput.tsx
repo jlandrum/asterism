@@ -17,9 +17,9 @@ import {
 	ToolbarGroup,
 } from "@wordpress/components";
 import {
-	media,
+	media, chevronDown
 } from "@wordpress/icons";
-import { useClickDetector } from "../ClickDetector/ClickDetector";
+import { useFocusManager } from "../FocusManager/FocusManager";
 
 export interface Media {
   id: number;
@@ -47,28 +47,35 @@ const ImageInputEditor = ({
   onChange,
 }: ImageInputProps) => {
   const [showToolbar, setShowToolbar] = useState(false);
-  const ref = useRef<any>();
 	const buttonRef = useRef<any>();
 
   const id = useId();
   const internalSlot = useSlot || `image-input-toolbar-${id}`;
 
 	const ControlWrapper = useBlockControls ? BlockControls : Fill;
-	const focusListener = useClickDetector(() => setShowToolbar(false), () => setShowToolbar(true));
+	const focusListener = useFocusManager(
+    () => setShowToolbar(false),
+    () => setShowToolbar(true)
+  );
 
   return (
-    <>
+    <div style={{ display: "inline-block" }} {...focusListener.props}>
       <img
         src={value?.url}
         alt={value?.alt}
         className={className}
         tabIndex={0}
-        {...focusListener}
-        ref={ref}
         style={style}
       />
       {!useSlot && showToolbar && (
-        <Popover anchor={ref.current} placement="top-start" variant="unstyled">
+        // @ts-ignore
+        <Popover
+				// @ts-ignore
+          placement="top-center"
+          variant="unstyled"
+          inline
+          focusOnMount={false}
+        >
           <Toolbar label="Image Input">
             <Slot name={internalSlot}></Slot>
           </Toolbar>
@@ -82,30 +89,26 @@ const ImageInputEditor = ({
           <Button
             ref={buttonRef}
             style={{ display: "none" }}
-            icon={media}
+            icon={chevronDown}
             onClick={props.open}
           />
         )}
       />
-			<ControlWrapper controls="" name={internalSlot}>
-				<ToolbarGroup>
-					<MediaUpload
-						title={"Image"}
-						onSelect={(v) => onChange(v)}
-						allowedTypes={["image"]}
-						render={(props: any) => (
-							<ToolbarButton
-								label={`Edit ${label}`}
-								data-toolbar-item={true}
-								className="components-toolbar-button"
-								icon={media}
-								onClick={() => buttonRef?.current?.click()}
-							/>
-						)}
-					/>
-				</ToolbarGroup>
-			</ControlWrapper>
-    </>
+      <ControlWrapper controls="" name={internalSlot}>
+        <ToolbarGroup>
+          <ToolbarButton
+            label={`Edit ${label}`}
+            data-toolbar-item={true}
+            className="components-toolbar-button"
+            icon={media}
+            onClick={() => {
+              console.error("hit");
+              buttonRef?.current?.click();
+            }}
+          />
+        </ToolbarGroup>
+      </ControlWrapper>
+    </div>
   );
 };
 

@@ -3,12 +3,27 @@
 .live-text-input {
 	position: relative;
 
+	textarea {
+		background-color: var(--admin-textarea-bg, transparent);
+		position: absolute;
+		inset: 0;
+		box-sizing: border-box;
+		display: inline-block;
+		resize: none;
+		height: calc(100%);
+		overflow: hidden;
+		margin: 0;
+		white-space: pre-wrap;
+		border: none;
+		line-height: inherit;
+		outline: none;
+	}
+
 	&__content {
+		@include outline(-2px);
 		&>textarea, &::after {
 			grid-area: 1 / 1 / 2 / 2;
 		}
-
-		@include outline();
 
 		.pre {
 			white-space: pre-wrap;
@@ -16,21 +31,6 @@
 			display: block;
 			min-height: 30px;
 			margin-right: 30px;
-		}
-
-		textarea {
-			background-color: var(--admin-textarea-bg, transparent);
-			position: absolute;
-			inset: 0;
-			box-sizing: border-box;
-			display: inline-block;
-			resize: none;
-			height: calc(100%);
-			overflow: hidden;
-			margin: 0;
-			white-space: pre-wrap;
-			border: none;
-			line-height: inherit;
 		}
 
 		&:focus-within {

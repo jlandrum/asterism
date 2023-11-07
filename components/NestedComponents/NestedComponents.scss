@@ -1,6 +1,13 @@
+@import "../common";
+
 .nested-components {
 	min-width: 100px;
 	min-height: 100px;
+	@include outline();
+
+	&__active {
+		outline: 1px dashed gray;
+	}
 
 	&__carousel-toolbar {
 		display: flex;
@@ -10,5 +17,15 @@
 		& > *:empty {
 			display: none;
 		}
+	}
+}
+
+.nested-components__toolbar {
+	display: flex;
+	flex-direction: row;
+	gap: 8px;
+
+	& > * {
+		background-color: white;
 	}
 }
