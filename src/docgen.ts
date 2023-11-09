@@ -30,15 +30,25 @@ await write(`./docs/DOCS.md`, doc);
 function docgenToMd(ast: any) {
 	let doc = ['', ''];
 
+	console.error(ast);
 	ast.forEach((node: any) => {
 		if (node.displayName.startsWith('use')) {
 			// Hook
-			doc[1] += `## [${node.displayName}](../${node.filePath})\n\n${node.description}\n`;
+			doc[1] += `## [${node.displayName}](../${node.filePath})\n\n${node.description}\n\n`;
+			Object.keys(node.tags).forEach((tag: string) => {
+				doc[1] += `**${tag}**: ${node.tags[tag]}\n\n`;
+			});
+			doc[1] += `\n\n`;
 		} else {
 			// Component
-			doc[0] += `## [${node.displayName}](../${node.filePath})\n\n${node.description}\n`;
-			
-			if (node.props) {
+			doc[0] += `## [${node.displayName}](../${node.filePath})\n\n${node.description}\n\n`;
+			Object.keys(node.tags).forEach((tag: string) => {
+				doc[0] += `**${tag}**: ${node.tags[tag]}\n\n`;
+			});
+			doc[0] += `\n\n`;
+
+
+			if (Object.keys(node.props).length > 0) {
 				doc[0] += `### Props\n\n` +
 				`| Name | Type | Default | Description |\n` +
 				`| ---- | ---- | ------- | ----------- |\n` +

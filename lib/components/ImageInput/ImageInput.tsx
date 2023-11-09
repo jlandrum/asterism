@@ -28,12 +28,27 @@ export interface Media {
 }
 
 interface ImageInputProps {
+
+	/** Label for the image input. */
   label: string;
+
+	/** The current value of the image input. */
   value?: Media;
+
+  /** If provided, the image select button will appear in the given slot.
+	 *  Otherwise, the icon will appear centered and on top of the image input */	
   useSlot?: string;
+
+	/** If true, the image select button will appear in the block controls.*/
   useBlockControls?: boolean;
+
+	/** The class name to apply to the image. */
   className?: string;
+
+	/** The style to apply to the image. */
   style?: CSSProperties;
+
+	/** The callback to fire when the image is changed. */
   onChange: (value: Media) => void;
 }
 
@@ -112,13 +127,8 @@ const ImageInputEditor = ({
 };
 
 /**
- * Allows selecting an image.
- * @param label The label to display in the toolbar
- * @param value The current value of the image
- * @param className The class name to apply to the image
- * @param onChange A callback to trigger when the image is changed
- * @param useSlot A slot to render the toolbar in
- * @param useBlockControls Whether to use block controls instead of a slot fill or the built in toolbar
+ * A component that represents a selectable image.
+ * @since 0.5.0
  */
 export const ImageInput = (props: ImageInputProps) => {
   const { label = "Image", value, className, style, useSlot, onChange } = props;

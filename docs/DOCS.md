@@ -2,50 +2,51 @@
 
 ## [ImageInput](../lib/components/ImageInput/ImageInput.tsx)
 
-Allows selecting an image.
+A component that represents a selectable image.
+
+**since**: 0.5.0
+
+
+
 ### Props
 
 | Name | Type | Default | Description |
 | ---- | ---- | ------- | ----------- |
-| label | string | Image |  |
-| value | Media |  |  |
-| useSlot | string |  |  |
-| useBlockControls | boolean |  |  |
-| className | string |  |  |
-| style | CSSProperties |  |  |
-| onChange | (value: Media) => void |  |  |
+| label | string | Image | Label for the image input. |
+| value | Media |  | The current value of the image input. |
+| useSlot | string |  | If provided, the image select button will appear in the given slot.<br/>Otherwise, the icon will appear centered and on top of the image input |
+| useBlockControls | boolean |  | If true, the image select button will appear in the block controls. |
+| className | string |  | The class name to apply to the image. |
+| style | CSSProperties |  | The style to apply to the image. |
+| onChange | (value: Media) => void |  | The callback to fire when the image is changed. |
 
 ## [SaveOnly](../lib/components/RenderScope/RenderScope.tsx)
 
 A utility element that renders only if the components within are being saved.
-### Props
 
-| Name | Type | Default | Description |
-| ---- | ---- | ------- | ----------- |
 
 
 ## [EditOnly](../lib/components/RenderScope/RenderScope.tsx)
 
 A utility element that renders only if the components within are being edited.
-### Props
 
-| Name | Type | Default | Description |
-| ---- | ---- | ------- | ----------- |
 
 
 ## [EditOnlyWrapper](../lib/components/RenderScope/RenderScope.tsx)
 
-A utility element that renders only if the components within are being edited.
-### Props
+A utility wrapper that renders only if the components within are being saved.
+It adds a conditional wrapper around the children, so it can be used with
+components that require a wrapper.
 
-| Name | Type | Default | Description |
-| ---- | ---- | ------- | ----------- |
 
 
 ## [ContentInput](../lib/components/ContentInput/ContentInput.tsx)
 
 A complex component with multiple uses. It can be used in place of Query Loop,
 or it can be used as a mechanism to select content for use in other components.
+
+
+
 ### Props
 
 | Name | Type | Default | Description |
@@ -60,6 +61,9 @@ or it can be used as a mechanism to select content for use in other components.
 ## [InnerBlocks](../lib/components/InnerBlocks/InnerBlocks.tsx)
 
 
+
+
+
 ### Props
 
 | Name | Type | Default | Description |
@@ -72,11 +76,12 @@ or it can be used as a mechanism to select content for use in other components.
 
 ## [CaptureFocus](../lib/components/FocusManager/FocusManager.tsx)
 
+A component that captures focus events and calls the provided callbacks.
 
-### Props
+For more details, see {@link useFocusManager}.
 
-| Name | Type | Default | Description |
-| ---- | ---- | ------- | ----------- |
+**returns**: ReactComponent - The component to render
+
 
 
 ## [NestedComponents](../lib/components/NestedComponents/NestedComponents.tsx)
@@ -84,6 +89,18 @@ or it can be used as a mechanism to select content for use in other components.
 A utility element that handles adding/removing children
 without the use of Gutenberg blocks. Useful for blocks
 that wish to have more finite control over children.
+
+**param**: props.className - The class name for the component
+props.value - The object that holds the data for the nested components
+props.children - The component to render for each child
+props.emptyObject - The object to clone when adding a new child
+props.slotName - Creates a slot allowing items to be hoisted into the toolbar. 
+  The slot name will be appended with the index of the child and
+and provided to the children as a prop.
+props.onChange - The function to call when the children change
+
+
+
 ### Props
 
 | Name | Type | Default | Description |
@@ -106,6 +123,9 @@ A inline text input that gives the user an indication that the text is editable.
 The children passed will be rendered as-is when the block is saved. When the block is
 being edited, the children will be rendered in a textarea that automatically resizes
 to fit the content.
+
+
+
 ### Props
 
 | Name | Type | Default | Description |
@@ -126,3 +146,13 @@ to fit the content.
 
 Watches for clicks outside of a target element. Follows the React 
 tree, allowing for nested click detectors to work across portals.
+
+To use, create an instance of the hook with the callback functions,
+then on the target element use {...hookInstance.props}.
+
+**param**: ref The target element to watch for touch events
+
+**returns**: An object containing the ref and props to apply to the target element.
+
+
+

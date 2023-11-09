@@ -4,6 +4,8 @@ import React from "react";
  * A utility element that renders only if the components within are being saved.
  */
 export class SaveOnly extends React.Component<{
+
+	/** Any elements here will only be rendered during a save */
 	children: any;
 }> {
 	render() {
@@ -18,6 +20,8 @@ export class SaveOnly extends React.Component<{
  * A utility element that renders only if the components within are being edited.
  */
 export class EditOnly extends React.Component<{
+
+	/** Any elements here will only render during an edit */
   children: any;
 }> {
   render() {
@@ -29,15 +33,25 @@ export class EditOnly extends React.Component<{
 }
 
 /**
- * A utility element that renders only if the components within are being edited.
+ * A utility wrapper that renders only if the components within are being saved.
+ * It adds a conditional wrapper around the children, so it can be used with
+ * components that require a wrapper.
  */
 export class EditOnlyWrapper extends React.Component<{
-  children: any;
+
+	/** Any elements here will only be rendered during a save */
+	children: any;
+
+	/** The wrapper component to use
+	 * @default "div"
+	 */
 	node: string;
+
+	/** Any additional props to pass to the wrapper */
 	[a:string]: any;
 }> {
   render() {
-		const { node, children, ...attrs} = this.props;
+		const { node = "div", children, ...attrs} = this.props;
     const Node = node;
 
 		// @ts-ignore As far as TS is aware, this isn't available - and that's fine

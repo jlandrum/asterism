@@ -1,21 +1,17 @@
 import {
   useRef,
-  useEffect,
-  useMemo,
-  useCallback,
   useState,
 } from "@wordpress/element";
-
-
 
 /**
  * Watches for clicks outside of a target element. Follows the React 
  * tree, allowing for nested click detectors to work across portals.
+ * 
+ * To use, create an instance of the hook with the callback functions,
+ * then on the target element use {...hookInstance.props}.
+ * 
  * @param ref The target element to watch for touch events
- * @param onOuterClick A callback to trigger on outer click events
- * @param onInnerClick A callback to trigger on inner click events
- * @returns An object with the onMouseDownCapture and onTouchStartCapture 
- *          handlers that should be applied to the target element.
+ * @returns An object containing the ref and props to apply to the target element.
  */
 export const useFocusManager = (
   onOuterClick: () => void = () => {},
@@ -55,6 +51,12 @@ export const useFocusManager = (
 	}
 };
 
+/**
+ * A component that captures focus events and calls the provided callbacks.
+ * 
+ * For more details, see {@link useFocusManager}.
+ * @returns ReactComponent - The component to render
+ */
 export const CaptureFocus = ({ onBlur, onFocus, children, element, ...props }: any) => {
 	const focusManager = useFocusManager(onBlur, onFocus);
 	const Element = element || 'div';
