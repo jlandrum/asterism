@@ -10,7 +10,7 @@ let themeObj: Theme | undefined = undefined;
  * Gets the current theme configuration
  * @returns The Theme Data for the current theme
  */
-export function getTheme(): ThemeData {
+export function getTheme(): Theme {
 	if (themeObj) return themeObj;
 	const themeFile = findFile('theme.json', './', `"$asterism": true`);
 

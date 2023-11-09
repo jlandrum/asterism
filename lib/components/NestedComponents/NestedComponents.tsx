@@ -154,6 +154,7 @@ const NestedEditor = <T,>({
       {value?.map?.((v, i) =>
         carousel && activeCarouselItem !== i ? undefined : (
           <CaptureFocus
+            element={element}
             className={i === activeItem ? "nested-components__active" : ""}
             onFocus={() => setActiveItem(i)}
             key={i}
@@ -162,6 +163,7 @@ const NestedEditor = <T,>({
               value: v,
               index: i,
               active: i === activeItem,
+              toolbarVisible: showToolbar,
               update: updateChild(i),
               slot: `${slotName}_${i}`,
             })}
@@ -172,7 +174,6 @@ const NestedEditor = <T,>({
         <Popover
           variant="unstyled"
           placement="top-end"
-          inline
           offset={12}
           focusOnMount={false}
           animate={false}

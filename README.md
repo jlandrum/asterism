@@ -27,6 +27,9 @@ Commands:
   help [command]          display help for command
 ```
 
+## Documentation
+You may view additional details in the documentation [here](docs/DOCS.md).
+
 ## Folders
 
 ### blocks

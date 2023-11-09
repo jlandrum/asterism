@@ -55,12 +55,13 @@ export const useFocusManager = (
 	}
 };
 
-export const CaptureFocus = ({ onBlur, onFocus, children, ...props }: any) => {
+export const CaptureFocus = ({ onBlur, onFocus, children, element, ...props }: any) => {
 	const focusManager = useFocusManager(onBlur, onFocus);
+	const Element = element || 'div';
 
 	return (
-		<div {...focusManager.props} {...props}>
-			{children}
-		</div>
-	)
+    <Element {...focusManager.props} {...props}>
+      {children}
+    </Element>
+  );
 }

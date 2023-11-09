@@ -21,11 +21,15 @@
     ]
   },
   "include": [
-		"types.d.ts",
-    "**/*.d.ts",
-    "**/*.json",
-    "src/**/*",
-    "components/**/*"
+		"lib/types.d.ts",
+		"lib/index.ts",
+    "lib/**/*.d.ts",
+    "lib/**/*.json",
+    "lib/**/*",
+    "src/*.ts",
+    "src/addons/**/*",
+    "components/**/*",
+		"package.json"
   ],
   "exclude": [
     "node_modules"
