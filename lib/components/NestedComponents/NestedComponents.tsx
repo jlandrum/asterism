@@ -1,26 +1,12 @@
-import React, {
-  useState,
-  useRef,
-  useCallback,
-  createElement,
-  Fragment,
-  useId,
-  useEffect,
-} from "@wordpress/element";
-
+import React from "@wordpress/element";
 import { EditOnly, SaveOnly } from "../RenderScope/RenderScope";
-import {
-  Popover,
-  Toolbar,
-  ToolbarGroup,
-  ToolbarButton,
-  Slot,
-	Fill,
-} from "@wordpress/components";
-
-import { chevronUp, chevronDown, chevronLeft, chevronRight, trash as close, plus as plus, tool } from "@wordpress/icons";
-import { CaptureFocus, useFocusManager } from "../FocusManager/FocusManager";
+import { InnerBlocks } from "@wordpress/block-editor";
+import { Block, BlockInstance } from '@wordpress/blocks';
+import { tool } from "@wordpress/icons";
 import './NestedComponents.scss';
+import { NestedEditor } from "./NestedEditor";
+import { NestedSave } from "./NestedSave";
+import { NestedInnerBlockEditor } from "./NestedInnerBlockEditor";
 
 interface ChildProps<T> {
 	value: T,
@@ -35,7 +21,7 @@ interface ChildProps<T> {
  * @typedef {object} NestedComponentsProps
  * @property {string} value - The object that holds the data for the nested components
  */
-interface NestedComponentsProps<T> {
+export interface NestedComponentsProps<T> {
 	/** The nested content */
   value: T[];
 	/** When adding a new item, this object will be used to model the new item's defaults */
@@ -61,211 +47,58 @@ interface NestedComponentsProps<T> {
   onChange: (value: T[]) => void;
 	/** @inheritdoc */
   children: (props: ChildProps<T>) => React.Element;
+	/** If true, the internal renderer will be disabled and the inner blocks 
+	 *  will be used instead. */
+	innerBlocks: false;
   [remaining: string]: any;
 }
 
-const NestedEditor = <T,>({
-  value: _value,
-  emptyObject = {} as T,
-  className,
-  slotName: _slotName,
-	maxItems,
-	carousel,
-	horizontal = false,
-  onChange,
-  children,
-	element,
-	...remaining
-}: NestedComponentsProps<T>) => {
-	const instanceId = useId();
-	const [showToolbar, setShowToolbar] = useState(false);
-	const [activeItem, setActiveItem] = useState(-1);
-	const [activeCarouselItem, setActiveCarouselItem] = useState(0);
-	const value = _value || [emptyObject];
+export interface NestedComponentsInnerBlockProps
+  extends Pick<
+    NestedComponentsProps<never>,
+    "className" | "slotName" | "horizontal" | "element" | "carousel"
+  > {
+  /** If true, the internal renderer will be disabled and the inner blocks
+   *  will be used instead. */
+  innerBlocks: true;
 
-	const focusManager = useFocusManager(
-		() => { setShowToolbar(false), setActiveItem(-1) }, 
-		() => { setShowToolbar(true) });
-	
-  function addChild() {
-		if (value) {
-      onChange([...value, { ...emptyObject }]);
-    } else {
-      onChange([{ ...emptyObject }]);
-    }
-		setActiveCarouselItem(value.length);
-		setActiveItem(value.length);
-  }
+	/** The ID of the block this component is hosted in. */
+	clientId: string;
 
-  function removeChild(atIndex: number) {
-    onChange(value.filter((_, index) => index !== atIndex));
-  }
-
-  function moveChild(fromIndex: number, toIndex: number) {
-    const newChildren = [...value];
-    const [child] = newChildren.splice(fromIndex, 1);
-    newChildren.splice(toIndex, 0, child);
-    onChange(newChildren);
-  }
-
-	function moveUp() {
-		moveChild(activeItem, activeItem - 1);
-		setActiveItem(activeItem - 1);
-	}
-
-	function moveDown() {
-		moveChild(activeItem, activeItem + 1);
-		setActiveItem(activeItem + 1);
-	}
-
-  const updateChild = (atIndex: number) => (partialChanges: Partial<T>) => {
-    const newChildren = [...value];
-    newChildren[atIndex] = { ...newChildren[atIndex], ...partialChanges };
-    onChange(newChildren);
-  };
-
-	const nextItem = () => {
-		setActiveCarouselItem(activeCarouselItem + 1);
-		setActiveItem(activeCarouselItem + 1);
-	}
-	
-	const prevItem = () => {
-		setActiveCarouselItem(activeCarouselItem - 1);
-		setActiveItem(activeCarouselItem - 1);
-	}
-
-	const removeCurrentItem = () => {
-		removeChild(activeItem);
-		if (activeItem === value.length - 1) {
-			setActiveItem((activeItem - 1 + value.length) % value.length);
-			setActiveCarouselItem((activeCarouselItem - 1 + value.length) % value.length);
-		}
-	}
-
-	const slotName = _slotName || `nested_components_${instanceId}`; 
-
-	return (
-    <div
-      {...focusManager.props}
-      className={["nested-components", className].join(" ")}
-      tabIndex={0}
-      {...remaining}
-    >
-      {value?.map?.((v, i) =>
-        carousel && activeCarouselItem !== i ? undefined : (
-          <CaptureFocus
-            element={element}
-            className={i === activeItem ? "nested-components__active" : ""}
-            onFocus={() => setActiveItem(i)}
-            key={i}
-          >
-            {children({
-              value: v,
-              index: i,
-              active: i === activeItem,
-              toolbarVisible: showToolbar,
-              update: updateChild(i),
-              slot: `${slotName}_${i}`,
-            })}
-          </CaptureFocus>
-        )
-      )}
-      {showToolbar && (
-        <Popover
-          variant="unstyled"
-          placement="top-end"
-          offset={12}
-          focusOnMount={false}
-          animate={false}
-        >
-          <div className="nested-components__toolbar">
-            <Toolbar
-              label="Nested Components"
-              style={{ backgroundColor: "white" }}
-            >
-              <ToolbarGroup>
-                <ToolbarButton label="Add" icon={plus} onClick={addChild} />
-                <ToolbarButton
-                  label="Remove"
-                  icon={close}
-                  disabled={activeItem < 0 || value.length <= 1}
-                  onClick={removeCurrentItem}
-                />
-              </ToolbarGroup>
-              {!carousel && (
-                <ToolbarGroup>
-                  <ToolbarButton
-                    icon={horizontal ? chevronLeft : chevronUp}
-                    label={horizontal ? "Move Item Left" : "Move Item Up"}
-                    onClick={moveUp}
-                  />
-                  <ToolbarButton
-                    icon={horizontal ? chevronRight : chevronDown}
-                    label={horizontal ? "Move Item Right" : "Move Item Down"}
-                    onClick={moveDown}
-                  />
-                </ToolbarGroup>
-              )}
-              {carousel && (
-                <ToolbarGroup>
-                  <ToolbarButton
-                    disabled={activeCarouselItem === 0}
-                    icon={chevronLeft}
-                    label="Previous Item"
-                    onClick={prevItem}
-                  />
-                  <ToolbarButton style={{ pointerEvents: "none" }}>
-                    {Math.max(0, activeItem) + 1} / {value?.length || 0}
-                  </ToolbarButton>
-                  <ToolbarButton
-                    disabled={activeCarouselItem === value.length - 1}
-                    icon={chevronRight}
-                    label="Next Item"
-                    onClick={nextItem}
-                  />
-                </ToolbarGroup>
-              )}
-            </Toolbar>
-            <Toolbar label="Inner Actions">
-              <Slot name={`${slotName}_${activeItem}`} />
-            </Toolbar>
-          </div>
-        </Popover>
-      )}
-    </div>
-  );
-};
+	/** The block instance type to use. */
+	allowedBlock: string; 
+}
 
 /**
  * A utility element that handles adding/removing children
  * without the use of Gutenberg blocks. Useful for blocks
  * that wish to have more finite control over children.
- * @param {string} props.className - The class name for the component
- * @param {string} props.value - The object that holds the data for the nested components
- * @param {string} props.children - The component to render for each child
- * @param {string} props.emptyObject - The object to clone when adding a new child
- * @param {string} props.slotName - Creates a slot allowing items to be hoisted into the toolbar. 
- *                                  The slot name will be appended with the index of the child and
- *     														  and provided to the children as a prop.
- * @param {string} props.onChange - The function to call when the children change
+ * 
+ * Note: The innerBlocks feature is experimental and not fully implemented.
  */
-export const NestedComponents = <T,>(props: NestedComponentsProps<T>): React.Element => {
-	const { className, value, children, element = 'div', ...remaining } = props;
-	
+export function NestedComponents<T extends NestedComponentsProps<K> | NestedComponentsInnerBlockProps, K extends any = never>
+	(props: T extends NestedComponentsProps<K> ? NestedComponentsProps<K> : NestedComponentsInnerBlockProps): React.Element {
+	const { innerBlocks, element = 'div', className } = props;
+
 	return (
-    <>
-      <SaveOnly>
-        {createElement(
-          element,
-          { className, ...remaining },
-          (value || []).map((v, i) => <Fragment key={i}>{children({ value: v, index: i, update: () => {} })}</Fragment>)
-        )}
-      </SaveOnly>
-      <EditOnly>
-        <NestedEditor {...props} {...remaining} />
-      </EditOnly>
-    </>
-  );
+		<>
+			<SaveOnly>
+				{innerBlocks ? (
+					<InnerBlocks.Content />
+				) : (
+					<NestedSave {...props as NestedComponentsProps<K>} />
+				)}
+			</SaveOnly>
+			<EditOnly>
+				{innerBlocks ? (
+					<NestedInnerBlockEditor {...props as NestedComponentsInnerBlockProps} />
+				) : (
+					<NestedEditor {...props as NestedComponentsProps<K>} />
+				)}
+			</EditOnly>
+		</>
+	);
 };
+
 
 export default NestedComponents;
