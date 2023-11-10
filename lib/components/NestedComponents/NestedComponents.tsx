@@ -49,7 +49,7 @@ export interface NestedComponentsProps<T> {
   children: (props: ChildProps<T>) => React.Element;
 	/** If true, the internal renderer will be disabled and the inner blocks 
 	 *  will be used instead. */
-	innerBlocks: false;
+	innerBlocks?: false;
   [remaining: string]: any;
 }
 
@@ -76,7 +76,7 @@ export interface NestedComponentsInnerBlockProps
  * 
  * Note: The innerBlocks feature is experimental and not fully implemented.
  */
-export function NestedComponents<T extends NestedComponentsProps<K> | NestedComponentsInnerBlockProps, K extends any = never>
+export function NestedComponents<K extends any, T extends NestedComponentsProps<K> | NestedComponentsInnerBlockProps = NestedComponentsProps<K>>
 	(props: T extends NestedComponentsProps<K> ? NestedComponentsProps<K> : NestedComponentsInnerBlockProps): React.Element {
 	const { innerBlocks, element = 'div', className } = props;
 

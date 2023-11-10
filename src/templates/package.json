@@ -4,12 +4,16 @@
   "devDependencies": {
     "bun-types": "latest"
   },
+	"scripts": {
+		"asterism": "asterism",
+		"ast": "ast"
+	},
   "dependencies": {
     "@types/wordpress__block-editor": "^11.5.5",
     "@types/wordpress__blocks": "^12.5.7",
     "@types/wordpress__dom": "^2.3.3",
     "@types/wordpress__editor": "^13.6.5",
     "@wordpress/icons": "^9.35.0",
-    "@yesand/asterism": "^0.4.0"
+    "@yesand/asterism": "^0.10.0"
   }
 }
