@@ -1,7 +1,7 @@
 {
   "name": "@yesand/asterism",
   "type": "module",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "types": "index.d.ts",
   "bin": {
     "asterism": "./shell.ts",
