@@ -22,34 +22,38 @@ interface ChildProps<T> {
  * @property {string} value - The object that holds the data for the nested components
  */
 export interface NestedComponentsProps<T> {
-	/** The nested content */
+  /** The nested content */
   value: T[];
-	/** When adding a new item, this object will be used to model the new item's defaults */
+  /** When adding a new item, this object will be used to model the new item's defaults */
   emptyObject?: T;
-	/** @inheritdoc */
+  /** @inheritdoc */
   className?: string;
-	/** If provided, gives the slots an explicit name. A slot which matches the name 
-	 *  will exist at the end of the toolbar, and a numbered slot (eg., slotName_#) 
-	 *  for every item */
+  /** If provided, gives the slots an explicit name. A slot which matches the name
+   *  will exist at the end of the toolbar, and a numbered slot (eg., slotName_#)
+   *  for every item */
   slotName?: string;
-	/** If set, the buttons will reflect a horizontal layout */
+  /** Renders the controls into a child slot */
+  useSlot?: string;
+  /** If set, the buttons will reflect a horizontal layout */
   horizontal?: boolean;
-	/** Limits the maximum number of items that can be added */
+  /** Limits the maximum number of items that can be added */
   maxItems?: number;
-	/** Overrides the base element to use */
+  /** Overrides the base element to use */
   element?: string;
-	/** If true, the individual items will no longer have their own toolbar. Instead,
-	 *  only one item will be displayed and any toolbar items hoisted into the nested
-	 *  toolbar will appear in the main toolbar.
-	 */
+  /** If true, the individual items will no longer have their own toolbar. Instead,
+   *  only one item will be displayed and any toolbar items hoisted into the nested
+   *  toolbar will appear in the main toolbar.
+   */
   carousel?: boolean;
-	/** A callback that sends the most current version of the data */
+	/** Specifies which controls to show */
+  showControls?: ('add' | 'remove' | 'carousel' | 'move')[];
+  /** A callback that sends the most current version of the data */
   onChange: (value: T[]) => void;
-	/** @inheritdoc */
+  /** @inheritdoc */
   children: (props: ChildProps<T>) => React.Element;
-	/** If true, the internal renderer will be disabled and the inner blocks 
-	 *  will be used instead. */
-	innerBlocks?: false;
+  /** If true, the internal renderer will be disabled and the inner blocks
+   *  will be used instead. */
+  innerBlocks?: false;
   [remaining: string]: any;
 }
 
@@ -78,7 +82,7 @@ export interface NestedComponentsInnerBlockProps
  */
 export function NestedComponents<K extends any, T extends NestedComponentsProps<K> | NestedComponentsInnerBlockProps = NestedComponentsProps<K>>
 	(props: T extends NestedComponentsProps<K> ? NestedComponentsProps<K> : NestedComponentsInnerBlockProps): React.Element {
-	const { innerBlocks, element = 'div', className } = props;
+	const { innerBlocks } = props;
 
 	return (
 		<>
