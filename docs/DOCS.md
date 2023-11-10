@@ -90,14 +90,7 @@ A utility element that handles adding/removing children
 without the use of Gutenberg blocks. Useful for blocks
 that wish to have more finite control over children.
 
-**param**: props.className - The class name for the component
-props.value - The object that holds the data for the nested components
-props.children - The component to render for each child
-props.emptyObject - The object to clone when adding a new child
-props.slotName - Creates a slot allowing items to be hoisted into the toolbar. 
-  The slot name will be appended with the index of the child and
-and provided to the children as a prop.
-props.onChange - The function to call when the children change
+Note: The innerBlocks feature is experimental and not fully implemented.
 
 
 
@@ -105,16 +98,14 @@ props.onChange - The function to call when the children change
 
 | Name | Type | Default | Description |
 | ---- | ---- | ------- | ----------- |
-| value | T[] |  | The nested content |
-| emptyObject | T | {} as T | When adding a new item, this object will be used to model the new item's defaults |
 | className | string |  | @inheritdoc |
 | slotName | string |  | If provided, gives the slots an explicit name. A slot which matches the name <br/>will exist at the end of the toolbar, and a numbered slot (eg., slotName_#) <br/>for every item |
 | horizontal | boolean |  | If set, the buttons will reflect a horizontal layout |
-| maxItems | number |  | Limits the maximum number of items that can be added |
 | element | string |  | Overrides the base element to use |
 | carousel | boolean |  | If true, the individual items will no longer have their own toolbar. Instead,<br/>only one item will be displayed and any toolbar items hoisted into the nested<br/>toolbar will appear in the main toolbar. |
-| onChange | (value: T[]) => void |  | A callback that sends the most current version of the data |
-| children | (props: ChildProps<T>) => React.Element |  | @inheritdoc |
+| innerBlocks | boolean |  | If true, the internal renderer will be disabled and the inner blocks <br/>will be used instead.<br/>If true, the internal renderer will be disabled and the inner blocks<br/>will be used instead. |
+| clientId | any |  | The ID of the block this component is hosted in. |
+| allowedBlock | any |  | The block instance type to use. |
 
 ## [LiveTextInput](../lib/components/LiveTextInput/LiveTextInput.tsx)
 

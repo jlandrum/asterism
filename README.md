@@ -4,11 +4,34 @@
 
 Asterism is a command-line tool designed for rapid development of block-based themes in WordPress. It provides a simple and efficient approach to creating visually appealing and functional themes. With Asterism, developers can leverage pre-configured templates and streamline tasks through a command-line interface. This enables quick prototyping, iteration, and deployment of WordPress themes, making it accessible to both beginners and experienced developers alike.
 
-To install it globally, run `bun install -g @yesand/asterism` - [bun](https://bun.sh) is required.
+To install it globally, run `bun install -g @yesand/asterism` - [bun](https://bun.sh) is required. Bun 1.0.10 or higher is strongly recommended. 
 
 Asterism can then be used in your Wordpress development folder using `asterism`, `ast` or `wpa`
 
 The reason bun was chosen is because it's extremely fast and because it allows Asterism to be built as a first-class TypeScript project; Everything will have proper documentation to make creating blocks an absolute breeze.
+
+## What asterism is:
+Asterism intends to replace the workflow of creating build scripts and tools within a 
+wordpress theme which often gets deployed with the theme, while adding a series of powerful
+utilities for adding functionality to wordpress quickly and in a modular manner. The goal
+is a mix of portability and reusability. 
+
+Asterism projects mirror Wordpress themes, and the generated themes do not include any code
+that requires Asterism to work - even if you use Asterism's utility components, these are
+designed to function as their own thing, identical to if you wish to use a React UI library
+within a Wordpress theme. They should be able to be zipped and installed on a target site
+without needing any tools from Asterism.
+
+## What asterism isn't:
+Asterism does not replace the theme development workflow nor does it intend to replace or
+modify Wordpress development practices. Asterism-generated blocks are standard Wordpress
+blocks that do not have any asterism-specific functionality included by default. 
+Additionally, the tooling intends to be Gutenberg-compliant, not Wordpress-compliant -
+that is, it intends to work anywhere Gutenberg works (with plans to support non-wordpress)
+usage in the (distant) future.
+
+You will still need to follow Wordpress best practices regardless, and understand how 
+Gutenberg blocks work in the context of Wordpress.
 
 ## Usage:
 ```
@@ -40,17 +63,27 @@ Classic Wordpress theme assets go here. functions.php is special in that Asteris
 append additional content to the end of your functions.php; other files will simply be copied.
 
 ### css
-Stylesheets will be built from here and put inside style.css.
+Styles must be added into the `styles` section of `theme.json` to load. 
+
+To load a style:
+* Add `{ "name": "<scss or css file name from css>" }`
+
+To load an editor style:
+* Add `{ "name": "<scss or css file name from css>", "editorStyle": true }`
+
+These styles will be loaded into `functions.php` for themes and `blocks.php` for block-only projects.
 
 ### js
-TODO: Not yet implemented
+Basic support has been added - any .js file added to the /js folder will be loaded globally.
+It is only currently recommended to use this if you are absolutely sure you wish for a script
+to run globally; a better process identical to CSS will be added soon.
 
 ## Initializing a project
-
 To initialize an Asterism project, first create a directory to store
 the files for your project (We recommend `/src` in the root of your WordPress install) then `cd` into that directory.
 
 From there, simply run `asterism init`, follow the prompts, and the bare necessities will be put into place! If you are adding blocks to an existing theme, you will need to set `advanced.mode` to `blockOnly` in your `theme.json` file. For more information, see [Block-Only Mode](#block-only-mode) under Advanced Usage.
+
 
 ## Creating a block
 
@@ -102,13 +135,15 @@ folder name of your theme or `themeFolder` must be set in your `theme.json`.
 
 ## What's Missing / Broken / Might Change
 * Site-wide JavaScript is not yet built or copied over.
-* The styles are automatically minified and injected into your theme's theme.css - this may change to allow creating multiple css files with automatic insertion
+* ~~The styles are automatically minified and injected into your theme's theme.css - this may change to allow creating multiple css files with automatic insertion~~ Styles no longer end up in theme.css as this reduced compatibility with many plugins. See the [css](#css) section for details.
 * Currently, this depends on the webpack configuration provided by @wordpress/scripts. This is fine - but it depends on a lot of tools with outdated dependencies which may break things when `bun install -g` is used to add additional tools.
 * Some users have reported global packages not being properly linked in bun. This may also occur if you are not using a known shell. Be sure to add `./bun/bin` to your path if the command does not work after install.
 * The RenderScope utility uses a kludgy hack to detect if it's in save or edit mode. The Gutenberg team is looking to add hook support to the save method - at which point this utility may be deprecated.
+* Bun 1.0.10 introduced a fix to `spawn` which fixed an issue that could cause the `webpack` and `node` processes spawned during the build process to become disconnected and continue running after Asterism finishes a build or a watch session is ended. It is highly recommended that you use bun 1.0.10 or higher or you may need to run `killall node` and `killall webpack` as the build process will otherwise fail.
+* Wordpress' dev tools invoke `node` directly by seeking the binary. This bypasses bun's ability to run `node` invocations through `bun` instead. There are notable speed increases when using `bun` and issues have not been experienced, but we've yet to find a workaround to force `bun` usage in the scripts, so `node` must also be installed for `webpack` to work.
 
 ## Planned Features
-* Support for React Islands - components that will allow React hooks to be used on the front-end.
-* Automatic script registration.
+* Support for React Islands - components that will allow React hooks to be used on the front-end. This is in progress but not recommended for use as it has significant limitations.
+* ~~Automatic script registration.~~ basic support for this has been added.
 
 <small>Brought to you by the team at [Yes& Agency](https://yesandagency.com)</small>
