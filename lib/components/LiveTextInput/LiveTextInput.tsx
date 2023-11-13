@@ -101,10 +101,10 @@ const _LiveTextInput = ({
       <div className="live-text-input__content" ref={ref}>
         <span ref={childRef} className={`pre ${className}`}>
           {children}
-					{value?.text.endsWith('\n') && <div className={classes}>&bull;</div>}
+          {value?.text.endsWith("\n") && <div className={classes}>&bull;</div>}
         </span>
         <textarea
-          className={classes}
+          className={`live-text-input__input ${classes}`}
           value={value?.text || ""}
           onChange={(v) => setValue(v.target.value)}
           onClick={(e) => e.stopPropagation()}

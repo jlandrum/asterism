@@ -3,22 +3,6 @@
 .live-text-input {
 	position: relative;
 
-	textarea {
-		background-color: var(--admin-textarea-bg, transparent);
-		position: absolute;
-		inset: 0;
-		box-sizing: border-box;
-		display: inline-block;
-		resize: none;
-		height: calc(100%);
-		overflow: hidden;
-		margin: 0;
-		white-space: pre-wrap;
-		border: none;
-		line-height: inherit;
-		outline: none;
-	}
-
 	&__content {
 		@include outline(-2px);
 		&>textarea, &::after {
@@ -67,4 +51,24 @@
 			}
 		}
 	}
+}
+
+.live-text-input__input {
+	background-color: var(--admin-textarea-bg, transparent);
+	position: absolute;
+	inset: 0;
+	box-sizing: border-box;
+	display: inline-block;
+	resize: none;
+	height: calc(100%);
+	overflow: hidden;
+	margin: 0;
+	white-space: pre-wrap;
+	border: none;
+	outline: none;
+	border-radius: 0;
+	line-height: inherit;
+	color: inherit;
+	font-size: inherit;
+	font-family: inherit;
 }

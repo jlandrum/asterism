@@ -1,4 +1,4 @@
-import React from "@wordpress/element";
+import React, { useRef } from "@wordpress/element";
 import { EditOnly, SaveOnly } from "../RenderScope/RenderScope";
 import { InnerBlocks } from "@wordpress/block-editor";
 import { Block, BlockInstance } from '@wordpress/blocks';
@@ -7,6 +7,7 @@ import './NestedComponents.scss';
 import { NestedEditor } from "./NestedEditor";
 import { NestedSave } from "./NestedSave";
 import { NestedInnerBlockEditor } from "./NestedInnerBlockEditor";
+
 
 interface ChildProps<T> {
 	value: T,
@@ -45,8 +46,8 @@ export interface NestedComponentsProps<T> {
    *  toolbar will appear in the main toolbar.
    */
   carousel?: boolean;
-	/** Specifies which controls to show */
-  showControls?: ('add' | 'remove' | 'carousel' | 'move')[];
+  /** Specifies which controls to show */
+  showControls?: ("add" | "remove" | "carousel" | "move")[];
   /** A callback that sends the most current version of the data */
   onChange: (value: T[]) => void;
   /** @inheritdoc */
@@ -54,6 +55,8 @@ export interface NestedComponentsProps<T> {
   /** If true, the internal renderer will be disabled and the inner blocks
    *  will be used instead. */
   innerBlocks?: false;
+	/** If provided, the active item will link to others with the same name.  */
+	link?: string;
   [remaining: string]: any;
 }
 
@@ -103,6 +106,5 @@ export function NestedComponents<K extends any, T extends NestedComponentsProps<
 		</>
 	);
 };
-
 
 export default NestedComponents;

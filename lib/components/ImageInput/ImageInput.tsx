@@ -74,7 +74,7 @@ const ImageInputEditor = ({
   );
 
   return (
-    <div style={{ display: "inline-block" }} {...focusListener.props}>
+    <div style={{ display: "contents" }} {...focusListener.props}>
       <img
         src={value?.url}
         alt={value?.alt}
