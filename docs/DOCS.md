@@ -16,6 +16,7 @@ A component that represents a selectable image.
 | value | Media |  | The current value of the image input. |
 | useSlot | string |  | If provided, the image select button will appear in the given slot.<br/>Otherwise, the icon will appear centered and on top of the image input |
 | useBlockControls | boolean |  | If true, the image select button will appear in the block controls. |
+| inputOnly | boolean |  | If set, the image will only be used as an input method. You will<br/>be responsible for rendering the image in the safe function. |
 | className | string |  | The class name to apply to the image. |
 | style | CSSProperties |  | The style to apply to the image. |
 | onChange | (value: Media) => void |  | The callback to fire when the image is changed. |
@@ -29,6 +30,12 @@ A utility element that renders only if the components within are being saved.
 ## [EditOnly](../lib/components/RenderScope/RenderScope.tsx)
 
 A utility element that renders only if the components within are being edited.
+
+
+
+## [EditState](../lib/components/RenderScope/RenderScope.tsx)
+
+Exposes if the current state is in editor or in safe.
 
 
 
@@ -99,11 +106,11 @@ Note: The innerBlocks feature is experimental and not fully implemented.
 | Name | Type | Default | Description |
 | ---- | ---- | ------- | ----------- |
 | className | string |  | @inheritdoc |
-| slotName | string |  | If provided, gives the slots an explicit name. A slot which matches the name <br/>will exist at the end of the toolbar, and a numbered slot (eg., slotName_#) <br/>for every item |
+| slotName | string |  | If provided, gives the slots an explicit name. A slot which matches the name<br/>will exist at the end of the toolbar, and a numbered slot (eg., slotName_#)<br/>for every item |
 | horizontal | boolean |  | If set, the buttons will reflect a horizontal layout |
 | element | string |  | Overrides the base element to use |
 | carousel | boolean |  | If true, the individual items will no longer have their own toolbar. Instead,<br/>only one item will be displayed and any toolbar items hoisted into the nested<br/>toolbar will appear in the main toolbar. |
-| innerBlocks | boolean |  | If true, the internal renderer will be disabled and the inner blocks <br/>will be used instead.<br/>If true, the internal renderer will be disabled and the inner blocks<br/>will be used instead. |
+| innerBlocks | boolean |  | If true, the internal renderer will be disabled and the inner blocks<br/>will be used instead. |
 | clientId | any |  | The ID of the block this component is hosted in. |
 | allowedBlock | any |  | The block instance type to use. |
 
@@ -141,7 +148,10 @@ tree, allowing for nested click detectors to work across portals.
 To use, create an instance of the hook with the callback functions,
 then on the target element use {...hookInstance.props}.
 
-**param**: ref The target element to watch for touch events
+**param**: onOuterClick The callback to fire when a click is detected outside of the target element
+onInnerClick The callback to fire when a click is detected inside of the target element
+deps The dependencies to watch for changes
+watchBlock If true, the focus listener will follow the block instead of itself.
 
 **returns**: An object containing the ref and props to apply to the target element.
 

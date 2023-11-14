@@ -42,6 +42,10 @@ interface ImageInputProps {
 	/** If true, the image select button will appear in the block controls.*/
   useBlockControls?: boolean;
 
+	/** If set, the image will only be used as an input method. You will
+	 *  be responsible for rendering the image in the safe function. */
+	inputOnly?: boolean;
+
 	/** The class name to apply to the image. */
   className?: string;
 
@@ -55,6 +59,7 @@ interface ImageInputProps {
 const ImageInputEditor = ({
   label = "Image",
   value,
+	inputOnly,
   className,
 	style,
   useSlot,
@@ -75,13 +80,15 @@ const ImageInputEditor = ({
 
   return (
     <div style={{ display: "contents" }} {...focusListener.props}>
-      <img
-        src={value?.url}
-        alt={value?.alt}
-        className={className}
-        tabIndex={0}
-        style={style}
-      />
+			{ inputOnly ? undefined : (
+				<img
+					src={value?.url}
+					alt={value?.alt}
+					className={className}
+					tabIndex={0}
+					style={style}
+				/>
+			)}
       {!useSlot && showToolbar && (
         // @ts-ignore
         <Popover
@@ -112,7 +119,7 @@ const ImageInputEditor = ({
       <ControlWrapper controls="" name={internalSlot}>
         <ToolbarGroup>
           <ToolbarButton
-            label={`Edit ${label}`}
+            label={value && value.url ? `Replace ${label}` : `Set ${label}`}
             data-toolbar-item={true}
             className="components-toolbar-button"
             icon={media}
@@ -131,14 +138,16 @@ const ImageInputEditor = ({
  * @since 0.5.0
  */
 export const ImageInput = (props: ImageInputProps) => {
-  const { label = "Image", value, className, style, useSlot, onChange } = props;
+  const { label = "Image", value, className, style, inputOnly } = props;
   return (
     <>
       <EditOnly>
         <ImageInputEditor {...props} />
       </EditOnly>
       <SaveOnly>
-        <img className={className} src={value?.url} alt={value?.alt} style={style} />
+				{ inputOnly ? undefined : 
+        	<img className={className} src={value?.url} alt={value?.alt} style={style} />
+				}
       </SaveOnly>
     </>
   );

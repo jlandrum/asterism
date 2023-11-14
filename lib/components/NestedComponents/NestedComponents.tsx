@@ -46,6 +46,11 @@ export interface NestedComponentsProps<T> {
    *  toolbar will appear in the main toolbar.
    */
   carousel?: boolean;
+	/** If true, the focus listener will follow the block instead of itself.
+	 *  This can be useful if the block is being used in a carousel and it isn't
+	 *  obvious where the user should click.
+	 */
+	watchBlock?: boolean;
   /** Specifies which controls to show */
   showControls?: ("add" | "remove" | "carousel" | "move")[];
   /** A callback that sends the most current version of the data */

@@ -33,6 +33,23 @@ export class EditOnly extends React.Component<{
 }
 
 /**
+ * Exposes if the current state is in editor or in safe.
+ */
+export class EditState extends React.Component<{
+	/** Any elements here will only render during an edit */
+	children: (
+		isEditor: boolean
+	) => React.ReactElement | React.ReactElement[];
+}> {
+	render() {
+		// @ts-ignore As far as TS is aware, this isn't available - and that's fine
+		const hooksAvailable = !!this._reactInternals;
+		if (hooksAvailable) return <>{this.props.children(true)}</>;
+		return <>{this.props.children(false)}</>;
+	}
+}
+
+/**
  * A utility wrapper that renders only if the components within are being saved.
  * It adds a conditional wrapper around the children, so it can be used with
  * components that require a wrapper.

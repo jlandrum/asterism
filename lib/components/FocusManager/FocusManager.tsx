@@ -1,6 +1,7 @@
 import {
   useRef,
   useState,
+	useEffect
 } from "@wordpress/element";
 
 /**
@@ -10,18 +11,55 @@ import {
  * To use, create an instance of the hook with the callback functions,
  * then on the target element use {...hookInstance.props}.
  * 
- * @param ref The target element to watch for touch events
+ * @param onOuterClick The callback to fire when a click is detected outside of the target element
+ * @param onInnerClick The callback to fire when a click is detected inside of the target element
+ * @param deps The dependencies to watch for changes
+ * @param watchBlock If true, the focus listener will follow the block instead of itself.
  * @returns An object containing the ref and props to apply to the target element.
  */
-export const useFocusManager = (
+export function useFocusManager(
   onOuterClick: () => void = () => {},
   onInnerClick: () => void = () => {},
 	deps: any[] = [],
-) => {
+	watchBlock: boolean = false,
+) {
 	const [ref, setRef] = useState<any>(undefined);
-	
+
 	const focused = useRef<boolean>(false);
 	const delay = useRef<any>(-1);
+
+	useEffect(() => {
+    if (!ref || !watchBlock) return;
+    let currentElement = ref;
+	  let mutationObserver: MutationObserver | undefined = undefined;
+
+    while (currentElement !== null) {
+      if (currentElement.getAttribute("data-block")) {
+        break;
+      }
+      currentElement = currentElement.parentElement;
+    }
+
+		if (currentElement && currentElement !== ref) {
+			const mutationObserver = new MutationObserver((mutations) => {
+				mutations.forEach((mutation) => {
+					if (mutation.type === "attributes" && mutation.attributeName === "class") {
+						if (mutation.target.classList.contains("is-selected")) {
+							focusIn?.(mutation);
+						}
+						else {
+							focusOut?.(mutation);
+						}
+					}
+				});
+			});
+			mutationObserver.observe(currentElement, { attributes: true });
+		}
+
+    return () => {
+			mutationObserver?.disconnect();
+    };
+  }, [...deps, watchBlock, ref]);
 
 	const focusIn = (event: any) => {
 		if (!ref) return;
@@ -42,13 +80,13 @@ export const useFocusManager = (
 	};
 
 	return {
-		ref,
-		props: {
-			ref: setRef,
-			onFocusCapture: focusIn,
-			onBlurCapture: focusOut,
-		}
-	}
+    ref,
+    props: {
+      ref: setRef,
+      onFocusCapture: watchBlock ? undefined : focusIn,
+      onBlurCapture: watchBlock ? undefined : focusOut,
+    },
+  };
 };
 
 /**

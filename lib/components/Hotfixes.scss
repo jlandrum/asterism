@@ -1,3 +1,9 @@
+// Ensures the toolbar doesn't scroll
 [role=toolbar] {
 	width: max-content;
+}
+
+// Ensures the media modal shows over toolbars
+.media-modal {
+	z-index: 1000000;
 }

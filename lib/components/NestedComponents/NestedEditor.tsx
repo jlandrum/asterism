@@ -25,12 +25,13 @@ export const NestedEditor = <T,>({
 	innerBlocks, 
 	useSlot,
 	link,
+	watchBlock,
 	showControls = ['add', 'remove', 'carousel', 'move'],
 	...remaining
 }: NestedComponentsProps<T>) => {
 	const instanceId = useId();
 	const [showToolbar, setShowToolbar] = useState(false);
-	const [activeItem, setActiveItem] = useState(-1);
+	const [activeItem, setActiveItem] = useState(carousel ? 0 : -1);
 	const [activeCarouselItem, setActiveCarouselItem] = useState(0);
 	const [blockId, setBlockId] = useState("");
 
@@ -39,7 +40,8 @@ export const NestedEditor = <T,>({
 
 	const focusManager = useFocusManager(
 		() => {setShowToolbar(false) },
-		() => {setShowToolbar(true); }
+		() => {setShowToolbar(true) },
+		[], watchBlock
 	);
 
 	function addChild() {
@@ -141,108 +143,115 @@ export const NestedEditor = <T,>({
 	const targetInnserSlot = useSlot || slotName;
 
 	return (
-		<div
-			data-linkid={linkId}
-			data-active-item={activeItem}
-			{...focusManager.props}
-			className={["nested-components", className].join(" ")}
-			tabIndex={0}
-			{...remaining}
-		>
-			{value?.map?.((v, i) =>
-				carousel && activeCarouselItem !== i ? (
-					undefined
-				) : (
-					<CaptureFocus
-						element={element}
-						className={i === activeItem ? "nested-components__active" : ""}
-						onFocus={() => setActiveItem(i)}
-						key={i}
-					>
-						{children({
-							value: v,
-							index: i,
-							active: i === activeItem,
-							toolbarVisible: showToolbar,
-							update: updateChild(i),
-							slot: `${slotName}_${i}`,
-						})}
-					</CaptureFocus>
-				)
-			)}
-			{showToolbar && !useSlot && (
-				<>
-					<Popover
-						variant="unstyled"
-						placement="top-end"
-						offset={12}
-						focusOnMount={false}
-						animate={false}
-					>
-						<div className="nested-components__toolbar">
-							<Toolbar
-								label="Nested Components"
-								style={{ backgroundColor: "white" }}
-							>
-									<Slot name={targetInnserSlot} />
-							</Toolbar>
-							<Toolbar label="Inner Actions">
-								<Slot name={`${slotName}_${activeItem}`} />
-							</Toolbar>
-						</div>
-					</Popover>
-				</>
-			)}
-			<Fill name={targetInnserSlot}>
-				{(showControls.includes('add') || showControls.includes('remove')) && (
-					<ToolbarGroup>
-						{showControls.includes('add') && (
-							<ToolbarButton label="Add" icon={plus} onClick={addChild} />
-						)}
-						{showControls.includes('remove') && (
-							<ToolbarButton
-								label="Remove"
-								icon={close}
-								// disabled={activeItem < 0 || value.length <= 1}
-								onClick={removeCurrentItem}
-							/>
-						)}
-					</ToolbarGroup>
-				)}
-				{!carousel && showControls.includes('move') && (
-					<ToolbarGroup>
-						<ToolbarButton
-							icon={horizontal ? chevronLeft : chevronUp}
-							label={horizontal ? "Move Item Left" : "Move Item Up"}
-							onClick={moveUp}
-						/>
-						<ToolbarButton
-							icon={horizontal ? chevronRight : chevronDown}
-							label={horizontal ? "Move Item Right" : "Move Item Down"}
-							onClick={moveDown}
-						/>
-					</ToolbarGroup>
-				)}
-				{carousel && showControls.includes('carousel') && (
-					<ToolbarGroup>
-						<ToolbarButton
-							disabled={activeCarouselItem === 0}
-							icon={chevronLeft}
-							label="Previous Item"
-							onClick={prevItem}
-						/>
-						<ToolbarButton style={{ pointerEvents: "none" }}>
-							{Math.max(0, activeItem) + 1} / {value?.length || 0}
-						</ToolbarButton>
-						<ToolbarButton
-							disabled={activeCarouselItem === value.length - 1}
-							icon={chevronRight}
-							label="Next Item"
-							onClick={nextItem}
-						/>
-					</ToolbarGroup>
-				)}
-			</Fill>
-		</div>
-	);
+    <div
+      data-linkid={linkId}
+      data-active-item={activeItem}
+      {...focusManager.props}
+      className={["nested-components", className].join(" ")}
+      tabIndex={0}
+      {...remaining}
+    >
+      {value?.map?.((v, i) =>
+        carousel && activeCarouselItem !== i ? (
+          undefined
+        ) : (
+          <CaptureFocus
+            element={element}
+            className={i === activeItem ? "nested-components__active" : ""}
+            onFocus={() => setActiveItem(i)}
+            key={i}
+          >
+            {children({
+              value: v,
+              index: i,
+              active: i === activeItem,
+              toolbarVisible: showToolbar,
+              update: updateChild(i),
+              slot: `${slotName}_${i}`,
+            })}
+          </CaptureFocus>
+        )
+      )}
+      {showToolbar && !useSlot && (
+        <>
+          <Popover
+            variant="unstyled"
+            placement="top-end"
+            offset={12}
+            focusOnMount={false}
+            animate={false}
+          >
+            <div className="nested-components__toolbar">
+              <Toolbar
+                label="Nested Components"
+                style={{ backgroundColor: "white" }}
+              >
+                <Slot name={targetInnserSlot} />
+              </Toolbar>
+              <Toolbar label="Inner Actions">
+                <Slot name={`${slotName}_${activeItem}`} />
+              </Toolbar>
+            </div>
+          </Popover>
+        </>
+      )}
+      <Fill name={targetInnserSlot}>
+        {(showControls.includes("add") || showControls.includes("remove")) && (
+          <ToolbarGroup>
+            {showControls.includes("add") && (
+              <ToolbarButton
+                label="Add"
+                icon={plus}
+                onClick={addChild}
+                disabled={!!(maxItems && value.length >= maxItems)}
+              />
+            )}
+            {showControls.includes("remove") && (
+              <ToolbarButton
+                label="Remove"
+                icon={close}
+                // disabled={activeItem < 0 || value.length <= 1}
+                onClick={removeCurrentItem}
+              />
+            )}
+          </ToolbarGroup>
+        )}
+        {!carousel && showControls.includes("move") && (
+          <ToolbarGroup>
+            <ToolbarButton
+              icon={horizontal ? chevronLeft : chevronUp}
+              label={horizontal ? "Move Item Left" : "Move Item Up"}
+              disabled={activeItem <= 0}
+              onClick={moveUp}
+            />
+            <ToolbarButton
+              icon={horizontal ? chevronRight : chevronDown}
+              label={horizontal ? "Move Item Right" : "Move Item Down"}
+              disabled={activeItem >= value.length - 1}
+              onClick={moveDown}
+            />
+          </ToolbarGroup>
+        )}
+        {carousel && showControls.includes("carousel") && (
+          <ToolbarGroup>
+            <ToolbarButton
+              disabled={activeCarouselItem === 0}
+              icon={chevronLeft}
+              label="Previous Item"
+              onClick={prevItem}
+            />
+            <ToolbarButton style={{ pointerEvents: "none" }}>
+              {Math.max(0, activeItem) + 1} / {value?.length || 0}
+            </ToolbarButton>
+            <ToolbarButton
+              disabled={activeCarouselItem === value.length - 1}
+              icon={chevronRight}
+              label="Next Item"
+              onClick={nextItem}
+            />
+          </ToolbarGroup>
+        )}
+      </Fill>
+    </div>
+  );
 };
