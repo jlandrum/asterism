@@ -53,8 +53,13 @@ export function useFocusManager(
 					}
 				});
 			});
+
+			if (currentElement.classList.contains("is-selected")) {
+				focusIn?.(undefined);
+			}
+
 			mutationObserver.observe(currentElement, { attributes: true });
-		}
+		} 
 
     return () => {
 			mutationObserver?.disconnect();

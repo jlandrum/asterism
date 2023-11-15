@@ -25,6 +25,7 @@ function ast_get_content_input_query($attributes, $var_name)
 	$items = $attributes[$var_name]["isolated"] ?? [];
 	$fixed_to_top = $attributes[$var_name]["fixed"] ?? [];
 	$limit = $attributes[$var_name]["limit"] ?? 0;
+	$filters = $attributes[$var_name]["filters"] ?? [];
 
 	// Setup core query args
 	$exclude = $method === "exclusive" ? $fixed_to_top : array_merge($fixed_to_top, $items);
@@ -32,12 +33,28 @@ function ast_get_content_input_query($attributes, $var_name)
 
 	$include_fixed = $method === "exclusive" ? array_intersect($items, $fixed_to_top) : array_diff($fixed_to_top, $items);
 
+	// Apply filters
+	$tax_query = [];
+	foreach ($filters as $filter) {
+		array_push(
+			$tax_query,
+			array(
+				'taxonomy' => $filter['key'],
+				'field' => 'term_id',
+				'terms' => $filter['value'],
+			)
+		);
+	}
+
 	// Get fixed items
-	$fixed_posts = count($include_fixed) === 0 ? [] : get_posts([
-		'post_type' => $post_type,
-		'post__in' => $include_fixed,
-		'order' => 'ASC'
-	]);
+	$fixed_posts = count($include_fixed) === 0 ? [] : get_posts(
+		[
+			'post_type' => $post_type,
+			'post__in' => $include_fixed,
+			'order' => 'ASC',
+			'tax_query' => $tax_query,
+		]
+	);
 
 	// Set the limit for remaining items
 	$remainingLimit = $limit === 0 ? PHP_INT_MAX : $limit - count($fixed_posts);
@@ -53,6 +70,7 @@ function ast_get_content_input_query($attributes, $var_name)
 			'posts_per_page' => $remainingLimit < 0 ? -1 : $remainingLimit,
 			'orderby' => $orderBy,
 			'order' => $order === 'az' || 'oldest' ? 'ASC' : 'DESC',
+			'tax_query' => $tax_query,
 		);
 
 		if ($method === "exclusive" && count($include) > 0) {
