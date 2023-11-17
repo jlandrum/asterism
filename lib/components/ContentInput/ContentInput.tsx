@@ -6,6 +6,7 @@ import React, {
 	useContext,
   useEffect,
   useMemo,
+	useRef
 } from "@wordpress/element";
 import { EditOnly } from "../RenderScope/RenderScope";
 import {
@@ -20,6 +21,7 @@ import {
 	ToolbarButton,
 	TextControl,
 	Flex,
+	FormTokenField,
 	__experimentalNumberControl as NumberControl,
   __experimentalGrid as Grid,
 } from "@wordpress/components";
@@ -29,11 +31,9 @@ import { chevronUp, chevronDown, unseen, seen, pin, edit, close, blockMeta, plus
 import apiFetch from "@wordpress/api-fetch";
 import { addQueryArgs } from "@wordpress/url";
 import { useFocusManager } from "../FocusManager/FocusManager";
+import Filters from "./Filters";
 
-const COMPARATOR_OPTIONS = [
-	{ label: "Equals", value: "=" },
-	{ label: "Does Not Equal", value: "!=" },
-];
+type Features = 'filters' | 'pin';
 
 interface ContentPreview {
 	/** The query to execute */
@@ -44,7 +44,7 @@ interface ContentPreview {
 
 interface ContentQuery {
 	/** The post type to query */
-  postType: string;
+  postType: string[];
 	/** The querying method */
 	method?: 'exclusive' | 'inclusive';
 	/** The ordering method */
@@ -61,9 +61,13 @@ interface ContentQuery {
 
 interface ContentInputProps {
 	/** Any values set will be fixed (Cannot be changed within Gutenberg) */
-	fixedValue?: ContentQuery;
+	fixedValue?: Partial<ContentQuery>;
   /** Filters the available items */
+	allowed?: Features[];
+	/** The current ContentQuery value */
   value?: ContentQuery;
+	/** If true, only one post type can be selected */
+	single?: boolean;
   /** The children to render, which will also provide a context in which
    *  the result of the query can be accessed.
    */
@@ -89,7 +93,7 @@ function shuffleArray(array: any[]) {
 }
 
 const ContentInputContext = createContext<ContentPreview>({
-	query: { postType: "pages" },
+	query: { postType: ["pages"] },
 	results: [],
 });
 
@@ -98,21 +102,19 @@ const _ContentInput = ({
 	useEditorToolbar = true,
 	fixedValue,
   value,
+	single = true,
   children,
+	allowed = undefined,
   onValueChange,
   ...props
 }: ContentInputProps) => {
   const [queryPreview, setQueryPreview] = useState<any>([]);
 	const [showEditor, setShowEditor] = useState(false);
 	const [search, setSearch] = useState('');
-	const [taxonomies, setTaxonomies] = useState<any>({});
+	const [searchRaw, setSearchRaw] = useState<string>('');
+	const searchValDebounce = useRef<number|NodeJS.Timeout>(-1);
 	const [showButton, setShowButton] = useState(false);
-
-	// For the filter editor
-	const [taxonomy, setTaxonomy] = useState('');
-	const [comparator, setComparator] = useState('=');
-	const [term, setTerm] = useState('');
-	const [terms, setTerms] = useState<any>([]);
+	const [postTypes, setPostTypes] = useState<any[]>([]);
 
 	const focusListener = useFocusManager(
 		() => setShowButton(false),
@@ -120,20 +122,37 @@ const _ContentInput = ({
 		[], true
 	);
 
+	useEffect(() => {
+		clearTimeout(searchValDebounce.current);
+		searchValDebounce.current = setTimeout(() => {
+			setSearch(searchRaw);
+		}, 1000);
+	}, [searchRaw]);
+
   const query = useMemo(
     () => ({
-      postType: "pages",
-			method: "inclusive" as const,
-			order: "newest" as const,
-			limit: 0,
-			filters: [],
+      method: "inclusive" as const,
+      order: "newest" as const,
+      limit: 0,
+      filters: [],
       ...value,
-			...fixedValue,
+      // Addresses change to array
+      postType: value?.postType ? 
+			(typeof value.postType === "string" ? [value.postType] : value.postType)
+			: ["pages"],
+      ...fixedValue,
     }),
     [value]
   );
 
-	const postTypes = useMemo(() => select("core").getPostTypes({ per_page: -1 }) || [], []);
+	const allows = (feature: string) => {
+		if (!allowed) return true;
+		return allowed.includes(feature as Features);
+	}
+
+  const setQuery = (newQuery: ContentQuery) => {
+    onValueChange?.(newQuery);
+  };
 
 	// Ensure the initial value is set
 	useEffect(() => {
@@ -143,54 +162,68 @@ const _ContentInput = ({
 	}, []);
 
 	useEffect(() => {
-		apiFetch({ path: '/wp/v2/taxonomies' }).then(setTaxonomies as any) 
-	}, [query.postType]);
-
-  const setQuery = (newQuery: ContentQuery) => {
-    onValueChange?.(newQuery);
-  };
+		apiFetch<any>({ path: "/wp/v2/types" })
+			.then(postTypes => Object.entries(postTypes).map(([key, value]) => ({ slug: key, ...value as object })))
+			.then(setPostTypes as any);
+	}, []);
 
   //Run the query and get the results
-  useEffect(() => {
-    const restEndpoint = postTypes.find(
-      (it: any) => it.slug === query.postType
-    )?.rest_base;
+	const runQuery = (postType: string, fixedItems: number[] = [], search: string | undefined = undefined) => {
+		const restEndpoint = postTypes.find((it: any) => it.slug === postType)?.rest_base;
 
 		const args = {
-      per_page: -1,
+      per_page: Math.ceil(50 / query.postType.length),
       order: query.order === "az" || query.order === "newest" ? "asc" : "desc",
       orderby: query.order === "az" || query.order === "za" ? "title" : "date",
     } as any;
 
+		if (search) {
+			args.search = search;
+		}
+
 		if (query.filters) {
-			query.filters.forEach((filter: any) => {
-				args[filter.key] = `${filter.value}`;
+			query.filters.filter((it => it.postType === postType)).forEach((filter: any) => {
+				args[`${filter.key}${filter.by === '!=' ? '_exclude' : ''}`] = `${filter.value}`;
 			});
 		}
 
-    apiFetch({
-      path: addQueryArgs(`/wp/v2/${restEndpoint}`, args),
-      method: "GET",
-    })
-      .then((data) => {
-        setQueryPreview(
-          query.order === "random" ? shuffleArray(data as any[]) : data
-        );
-      })
-      .catch((e) => {
-        console.error(e);
-        setQueryPreview([]);
-      });
-  }, [postTypes, query.order, query.postType, query.filters]);
+		return Promise.all([
+			fixedItems.length > 0 ? apiFetch({
+				path: addQueryArgs(`/wp/v2/${restEndpoint}`, { include: fixedItems.join(',') }),
+				method: "GET",
+			}) : new Promise((resolve) => resolve([])),
+			apiFetch({
+				path: addQueryArgs(`/wp/v2/${restEndpoint}`, { ...args, exclude: fixedItems.join(',') }),
+				method: "GET",
+			}),
+		]).then((results) => results.flat());
+	}
 
-	useEffect(() => {
-		if (!taxonomy) return;
-		apiFetch({ path: addQueryArgs(`/wp/v2/${taxonomy}`, {
-			'_fields': ['name', 'id', 'slug']
-		}) }).then((data: any) => {
-			setTerms(data);
-		});
-	}, [taxonomy, taxonomies]);
+  useEffect(() => {
+		(async () => {
+			let queryPreview: any[] = await Promise.all([...query.postType].map((it: any) => runQuery(it, query.fixed, search)))
+				.then((results) => results.flat())
+				.then((data: any) =>
+					data.sort((a: any, b: any) => {
+						if (query.order === "random") return 0;
+						if (query.order === "newest")
+							return new Date(b.date).getTime() - new Date(a.date).getTime();
+						if (query.order === "oldest")
+							return new Date(a.date).getTime() - new Date(b.date).getTime();
+						if (query.order === "az")
+							return a.title.rendered.localeCompare(b.title.rendered);
+						if (query.order === "za")
+							return b.title.rendered.localeCompare(a.title.rendered);
+					})
+				)
+				.then((data) => query.order === "random" ? shuffleArray(data as any[]) : data)
+				.catch(console.error);
+
+			if (!queryPreview) return;
+
+			setQueryPreview(queryPreview);
+		})();
+  }, [postTypes, query.order, query.postType, query.filters, search]);
 
 	const excludeState = (postId: number): [string, any] => {
 		if (query.method === 'exclusive') {
@@ -260,38 +293,8 @@ const _ContentInput = ({
 		setQuery({ ...query, fixed: newFixed });
 	}
 
-	const sortedItems = sortItems().filter((it) => search ? it.title.rendered.toLowerCase().includes(search.toLowerCase()) : true);
+	const sortedItems = sortItems().filter((it) => it);
 	const slot = props.useSlot || 'content-input-slot';
-
-	const availableTaxonomies = useMemo(() => {
-		return Object.keys(taxonomies)
-      .filter((it: any) => taxonomies[it].types?.includes?.(query.postType))
-      .map((taxonomy: any) => taxonomies[taxonomy]);
-	}, [taxonomies, query.postType]);
-
-	const availableTaxonomyOptions = useMemo(() => {
-		return [
-			{ label: 'Select a Taxonomy', value: '', hidden: true },
-			...availableTaxonomies.map((it: any) => ({ label: it.name, value: it.slug })),
-		]
-	}, [availableTaxonomies]);
-
-	const termsOptions = useMemo(() => {
-		return [
-			{ label: 'Select a Term', value: '', hidden: true },
-			...terms.map((it: any) => ({ label: it.name, value: it.id }))
-		];
-	}, [terms]);
-
-	const addFilter = () => {
-		setQuery({...query, filters: [...query.filters, { type: 'taxonomy', key: taxonomy, by: comparator, value: term } ]})
-	};
-
-	const removeTaxonomyFilter = (index: number) => {
-		const newFilters = [...query.filters];
-		newFilters.splice(index, 1);
-		setQuery({...query, filters: newFilters});
-	}
 
   return (
     <div className="content-input" {...props} {...focusListener.props}>
@@ -313,179 +316,158 @@ const _ContentInput = ({
 
       {showEditor && (
         <Modal
-          onRequestClose={() => setShowEditor(false)}
-          title="Content Select"
+          isFullScreen
+          onRequestClose={() => { setShowEditor(false), setSearch(''); }}
+          title="Query Editor"
           className="content-input-modal"
         >
           <Panel>
-            <PanelBody>
+            <PanelBody title="Basic Settings">
               {!fixedValue?.postType && (
                 <PanelRow>
+									{single ? (
+										<SelectControl
+											value={query?.postType?.[0]}
+											onChange={(value) =>
+												setQuery({ ...query, postType: [value] })
+											}
+											options={postTypes.map((postType: any) => ({
+												label: postType.name,
+												value: postType.slug,
+											}))}
+											label="Post Type"
+										/>
+									) : (
+										<FormTokenField
+											value={query?.postType}
+											onChange={(value) =>
+												setQuery({ ...query, postType: value as string[] })
+											}
+											suggestions={postTypes.map((postType: any) => (postType.slug))}
+											label="Post Type"
+										/>
+									)}
+                </PanelRow>
+              )}
+              {!fixedValue?.order && (
+                <PanelRow>
                   <SelectControl
-                    value={query?.postType}
-                    onChange={(value) =>
-                      setQuery({ ...query, postType: value })
-                    }
-                    options={postTypes.map((postType: any) => ({
-                      label: postType.name,
-                      value: postType.slug,
-                    }))}
-                    label="Post Type"
+                    value={query?.order}
+                    // @ts-ignore
+                    onChange={(value) => setQuery({ ...query, order: value })}
+                    options={[
+                      { label: "Newest to Oldest", value: "newest" },
+                      { label: "Oldest to Newest", value: "oldest" },
+                      { label: "A -> Z", value: "az" },
+                      { label: "Z -> A", value: "za" },
+                      { label: "Random", value: "random" },
+                      // TODO: Add custom ordering by field
+                    ]}
+                    label="Order By"
                   />
                 </PanelRow>
               )}
-              <PanelRow>
-                <SelectControl
-                  value={query?.order}
-                  // @ts-ignore
-                  onChange={(value) => setQuery({ ...query, order: value })}
-                  options={[
-                    { label: "Newest to Oldest", value: "newest" },
-                    { label: "Oldest to Newest", value: "oldest" },
-                    { label: "A -> Z", value: "az" },
-                    { label: "Z -> A", value: "za" },
-                    { label: "Random", value: "random" },
-                    // TODO: Add custom ordering by field
-                  ]}
-                  label="Order By"
-                />
-              </PanelRow>
-              <PanelRow>
-                <SelectControl
-                  value={query?.method}
-                  // @ts-ignore
-                  onChange={(value) => setQuery({ ...query, method: value })}
-                  options={[
-                    { label: "Exclusive", value: "exclusive" },
-                    { label: "Inclusive", value: "inclusive" },
-                  ]}
-                  help="Exclusive will only show posts that have been flagged to be included. Inclusive will show all posts that haven't explicitly been excluded."
-                  label="Query Mode"
-                />
-              </PanelRow>
-              <PanelRow>
-                <NumberControl
-                  value={query?.limit}
-                  onChange={(value) =>
-                    setQuery({ ...query, limit: parseInt(value || "0") })
-                  }
-                  label="Limit"
-                  min={0}
-                  max={100}
-                  help="Limits the total number of items; use 0 for no limit."
-                />
-              </PanelRow>
+              {!fixedValue?.method && (
+                <PanelRow>
+                  <SelectControl
+                    value={query?.method}
+                    // @ts-ignore
+                    onChange={(value) => setQuery({ ...query, method: value })}
+                    options={[
+                      { label: "Exclusive", value: "exclusive" },
+                      { label: "Inclusive", value: "inclusive" },
+                    ]}
+                    help="Exclusive will only show posts that have been flagged to be included. Inclusive will show all posts that haven't explicitly been excluded."
+                    label="Query Mode"
+                  />
+                </PanelRow>
+              )}
+              {!fixedValue?.limit && (
+                <PanelRow>
+                  <NumberControl
+                    value={query?.limit}
+                    onChange={(value) =>
+                      setQuery({ ...query, limit: parseInt(value || "0") })
+                    }
+                    label="Limit"
+                    min={0}
+                    max={100}
+                    help="Limits the total number of items; use 0 for no limit."
+                  />
+                </PanelRow>
+              )}
             </PanelBody>
-            <PanelBody title="Filters" initialOpen={true}>
-              <PanelRow>
-                <Flex align="flex-end" justify="flex-start">
-                  <SelectControl
-                    options={availableTaxonomyOptions}
-                    label="Taxonomy"
-                    value={taxonomy}
-                    onChange={setTaxonomy}
-                  />
-                  <SelectControl
-                    options={COMPARATOR_OPTIONS}
-                    label="Comparator"
-                    value={comparator}
-                    onChange={setComparator}
-                  />
-                  <SelectControl
-                    options={termsOptions}
-                    label="Term"
-                    value={term}
-                    onChange={setTerm}
-                  />
-                  <Button
-                    icon={plus}
-                    size="small"
-                    label="Add Filter"
-                    variant="primary"
-                    onClick={addFilter}
-                  />
-                </Flex>
-              </PanelRow>
-              <PanelRow>
-                <table className="taxonomy-filters" style={{ width: "100%" }}>
-                  <tr>
-                    <th>Taxonomy</th>
-                    <th>Comparator</th>
-                    <th>Value</th>
-                    <th>Actions</th>
-                  </tr>
-                  {query.filters?.map((it: any, i) => (
-                    <tr>
-                      <td>{it.key}</td>
-                      <td>{it.by}</td>
-                      <td>{it.value}</td>
-                      <td>
-                        <Button
-                          size="small"
-                          icon={close}
-                          onClick={() => removeTaxonomyFilter(i)}
-                          label="Remove"
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </table>
-              </PanelRow>
-            </PanelBody>
+            {allows("filters") && (
+              <Filters
+                postTypes={query.postType}
+                filters={query.filters}
+                onChange={(filters) => setQuery({ ...query, filters })}
+              />
+            )}
             <PanelBody title={`Results (${queryPreview.length})`}>
               <PanelRow>
                 <TextControl
                   label="Filter Results"
-                  value={search}
+                  value={searchRaw}
                   help="Filters the result table to help find a specific entry; does not affect the query."
-                  onChange={(v) => setSearch(v)}
+                  onChange={setSearchRaw}
                 />
               </PanelRow>
               <PanelRow>
                 <table className="results" style={{ width: "100%" }}>
-                  <tr>
-                    <th>Title</th>
-                    <th>Actions</th>
-                  </tr>
-                  {sortedItems.map((it: any, index: number) => (
-                    <tr
-                      key={it.id}
-                      className={(query.limit || 100) < index + 1 ? "" : ""}
-                    >
-                      <td
-                        dangerouslySetInnerHTML={{ __html: it.title.rendered }}
-                      />
-                      <td>
-                        {lockedState(it.id)[2] && [
-                          <Button
-                            size="small"
-                            icon={chevronUp}
-                            label="Move Up"
-                            onClick={() => moveItem(index || 0, -1)}
-                          />,
-                          <Button
-                            size="small"
-                            icon={chevronDown}
-                            label="Move Down"
-                            onClick={() => moveItem(index || 0, 1)}
-                          />,
-                        ]}
-                        <Button
-                          size="small"
-                          onClick={() => toggleIsolation(it.id)}
-                          icon={excludeState(it.id)[1]}
-                          label={`${excludeState(it.id)[0]}`}
-                        />
-                        <Button
-                          size="small"
-                          icon={pin}
-                          style={{ opacity: lockedState(it.id)[1] }}
-                          label={lockedState(it.id)[0]}
-                          onClick={() => toggleFixed(it.id)}
-                        />
-                      </td>
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Title</th>
+                      <th>Actions</th>
                     </tr>
-                  ))}
+                  </thead>
+                  <tbody>
+                    {sortedItems.map((it: any, index: number) => (
+                      <tr
+                        key={it.id}
+                        className={(query.limit || 100) < index + 1 ? "" : ""}
+                      >
+                        <td>{postTypes.find(type => it.type === type.slug)?.name || it.slug}</td>
+                        <td
+                          dangerouslySetInnerHTML={{
+                            __html: it.title.rendered,
+                          }}
+                        />
+                        <td>
+                          {lockedState(it.id)[2] && [
+                            <Button
+                              size="small"
+                              icon={chevronUp}
+                              label="Move Up"
+                              onClick={() => moveItem(index || 0, -1)}
+                            />,
+                            <Button
+                              size="small"
+                              icon={chevronDown}
+                              label="Move Down"
+                              onClick={() => moveItem(index || 0, 1)}
+                            />,
+                          ]}
+                          <Button
+                            size="small"
+                            onClick={() => toggleIsolation(it.id)}
+                            icon={excludeState(it.id)[1]}
+                            label={`${excludeState(it.id)[0]}`}
+                          />
+                          {allows("pin") && (
+                            <Button
+                              size="small"
+                              icon={pin}
+                              style={{ opacity: lockedState(it.id)[1] }}
+                              label={lockedState(it.id)[0]}
+                              onClick={() => toggleFixed(it.id)}
+                            />
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
                 </table>
               </PanelRow>
             </PanelBody>

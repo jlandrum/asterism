@@ -44,6 +44,7 @@ export function useFocusManager(
 			const mutationObserver = new MutationObserver((mutations) => {
 				mutations.forEach((mutation) => {
 					if (mutation.type === "attributes" && mutation.attributeName === "class") {
+						/* @ts-ignore */
 						if (mutation.target.classList.contains("is-selected")) {
 							focusIn?.(mutation);
 						}

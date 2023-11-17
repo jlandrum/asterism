@@ -19,7 +19,7 @@ function ast_get_content_input_query($attributes, $var_name)
 	}
 
 	// Get attributes
-	$post_type = $attributes[$var_name]["postType"] ?? "pages";
+	$post_types = $attributes[$var_name]["postType"] ?? "pages";
 	$order = $attributes[$var_name]["order"] ?? "az";
 	$method = $attributes[$var_name]["method"] ?? "inclusive";
 	$items = $attributes[$var_name]["isolated"] ?? [];
@@ -33,26 +33,30 @@ function ast_get_content_input_query($attributes, $var_name)
 
 	$include_fixed = $method === "exclusive" ? array_intersect($items, $fixed_to_top) : array_diff($fixed_to_top, $items);
 
-	// Apply filters
-	$tax_query = [];
-	foreach ($filters as $filter) {
-		array_push(
-			$tax_query,
-			array(
-				'taxonomy' => $filter['key'],
-				'field' => 'term_id',
-				'terms' => $filter['value'],
-			)
-		);
+	// Generate Filters
+	$tax_query = ['relation' => 'OR', 'include_children' => false];
+	foreach ($post_types as $post_type) {
+		$sub_query = ['relation' => 'AND'];
+		foreach ($filters as $filter) {
+			array_push(
+				$sub_query,
+				[
+					'taxonomy' => $filter['key'],
+					'field' => 'term_id',
+					'terms' => $filter['value'],
+					'incliude_children' => true,
+				]
+			);
+		}
+		array_push($tax_query, $sub_query);
 	}
 
 	// Get fixed items
 	$fixed_posts = count($include_fixed) === 0 ? [] : get_posts(
 		[
-			'post_type' => $post_type,
+			'post_type' => $post_types,
 			'post__in' => $include_fixed,
-			'order' => 'ASC',
-			'tax_query' => $tax_query,
+			'orderby' => 'post__in',
 		]
 	);
 
@@ -62,11 +66,11 @@ function ast_get_content_input_query($attributes, $var_name)
 	$remaining_posts = [];
 
 	if ($remainingLimit > 0 || $remaining_posts === PHP_INT_MAX) {
-		$orderBy = $order === 'random' ? 'rand' : ($order === 'az' || 'za' ? 'title' : 'date'
+		$orderBy = $order === 'random' ? 'rand' : ($order === 'az' || $order === 'za' ? 'title' : 'date'
 		);
 
 		$args = array(
-			'post_type' => $post_type,
+			'post_type' => $post_types,
 			'posts_per_page' => $remainingLimit < 0 ? -1 : $remainingLimit,
 			'orderby' => $orderBy,
 			'order' => $order === 'az' || 'oldest' ? 'ASC' : 'DESC',
@@ -82,6 +86,7 @@ function ast_get_content_input_query($attributes, $var_name)
 
 		$remaining_posts = count($include) === 0 && $method === "exclusive" ? [] : get_posts($args);
 	}
+
 
 	$posts = array_merge($fixed_posts, $remaining_posts);
 	return $limit === 0 ? $posts : array_slice($posts, 0, $limit);

@@ -1,10 +1,14 @@
+.content-input {
+	display: contents;
+}
+
 .content-input-modal {
 	table.results {
-		grid-template-columns: 1fr auto;
+		grid-template-columns: auto 1fr auto;
 	}
 
 	table.taxonomy-filters {
-		grid-template-columns: auto auto 1fr auto;
+		grid-template-columns: auto auto auto 1fr auto;
 	}
 
 	table {
@@ -35,6 +39,10 @@
 			}
 		}
 		
+		tbody, thead {
+			display: contents;
+		}
+
 		th {
 			border-bottom: 1px solid #ddd;
 			text-align: left;
