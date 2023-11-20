@@ -84,14 +84,6 @@ interface ContentInputProps {
   [props: string]: any;
 }
 
-function shuffleArray(array: any[]) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
-
 const ContentInputContext = createContext<ContentPreview>({
 	query: { postType: ["pages"] },
 	results: [],
@@ -168,59 +160,22 @@ const _ContentInput = ({
 	}, []);
 
   //Run the query and get the results
-	const runQuery = (postType: string, fixedItems: number[] = [], search: string | undefined = undefined) => {
-		const restEndpoint = postTypes.find((it: any) => it.slug === postType)?.rest_base;
-
+	const runQuery = (search: string | undefined = undefined) => {
 		const args = {
-      per_page: Math.ceil(50 / query.postType.length),
-      order: query.order === "az" || query.order === "newest" ? "asc" : "desc",
-      orderby: query.order === "az" || query.order === "za" ? "title" : "date",
-    } as any;
+			...query,
+			...(search ? { search } : {}),
+		};
 
-		if (search) {
-			args.search = search;
-		}
-
-		if (query.filters) {
-			query.filters.filter((it => it.postType === postType)).forEach((filter: any) => {
-				args[`${filter.key}${filter.by === '!=' ? '_exclude' : ''}`] = `${filter.value}`;
-			});
-		}
-
-		return Promise.all([
-			fixedItems.length > 0 ? apiFetch({
-				path: addQueryArgs(`/wp/v2/${restEndpoint}`, { include: fixedItems.join(',') }),
-				method: "GET",
-			}) : new Promise((resolve) => resolve([])),
-			apiFetch({
-				path: addQueryArgs(`/wp/v2/${restEndpoint}`, { ...args, exclude: fixedItems.join(',') }),
-				method: "GET",
-			}),
-		]).then((results) => results.flat());
+		return apiFetch<any[]>({
+		 	path: addQueryArgs(`/ast/v1/query`, { ...args }),
+		 	method: "GET",
+		})
 	}
 
   useEffect(() => {
 		(async () => {
-			let queryPreview: any[] = await Promise.all([...query.postType].map((it: any) => runQuery(it, query.fixed, search)))
-				.then((results) => results.flat())
-				.then((data: any) =>
-					data.sort((a: any, b: any) => {
-						if (query.order === "random") return 0;
-						if (query.order === "newest")
-							return new Date(b.date).getTime() - new Date(a.date).getTime();
-						if (query.order === "oldest")
-							return new Date(a.date).getTime() - new Date(b.date).getTime();
-						if (query.order === "az")
-							return a.title.rendered.localeCompare(b.title.rendered);
-						if (query.order === "za")
-							return b.title.rendered.localeCompare(a.title.rendered);
-					})
-				)
-				.then((data) => query.order === "random" ? shuffleArray(data as any[]) : data)
-				.catch(console.error);
-
+			let queryPreview: any[] = await runQuery(search)
 			if (!queryPreview) return;
-
 			setQueryPreview(queryPreview);
 		})();
   }, [postTypes, query.order, query.postType, query.filters, search]);
@@ -262,28 +217,6 @@ const _ContentInput = ({
 		}
 	}
 
-	const sortItems = () => {
-		if (queryPreview.length === 0) return [];
-		return (
-      query.fixed?.map?.((it: number) =>
-        queryPreview.find((item: any) => item.id === it)
-      ) || []
-    )
-      .concat(queryPreview.filter((it: any) => !query.fixed?.includes(it.id)))
-	}
-
-	const filterItems = (items: any[]) => {
-    if (query.method === "exclusive") {
-      return items
-        .filter((it) => query.isolated?.includes(it.id))
-        .slice(0, query.limit === 0 ? 10000 : query.limit);
-    } else {
-      return items
-        .filter((it) => !query.isolated?.includes(it.id))
-        .slice(0, query.limit === 0 ? 10000 : query.limit);
-    }
-  };
-
 	const moveItem = (index: number, direction: number) => {
 		if (index + direction < 0 || (index + direction) >= (query.fixed ? query.fixed.length : -1)) return;
 		const newFixed = [...query?.fixed || []];
@@ -293,7 +226,6 @@ const _ContentInput = ({
 		setQuery({ ...query, fixed: newFixed });
 	}
 
-	const sortedItems = sortItems().filter((it) => it);
 	const slot = props.useSlot || 'content-input-slot';
 
   return (
@@ -423,7 +355,7 @@ const _ContentInput = ({
                     </tr>
                   </thead>
                   <tbody>
-                    {sortedItems.map((it: any, index: number) => (
+                    {queryPreview.map((it: any, index: number) => (
                       <tr
                         key={it.id}
                         className={(query.limit || 100) < index + 1 ? "" : ""}
@@ -477,7 +409,7 @@ const _ContentInput = ({
       <ContentInputContext.Provider
         value={{
           query,
-          results: filterItems(sortedItems),
+          results: queryPreview,
         }}
       >
         {children}
