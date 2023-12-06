@@ -21,14 +21,15 @@ function ast_get_content_input_query($attributes, $var_name = "content")
 	$method = $attributes[$var_name]["method"] ?? "inclusive";
 	$items = $attributes[$var_name]["isolated"] ?? [];
 	$fixed_to_top = $search ? [] : $attributes[$var_name]["fixed"] ?? [];
-	$limit = $search ? 20 : $attributes[$var_name]["limit"] ?? 20;
+	$limit = empty($search) ? $attributes[$var_name]["limit"] ?? 20 : 50;
+	$limit = $limit == 0 ? 50 : $limit;
 	$filters = $attributes[$var_name]["filters"] ?? [];
 
 	// Setup core query args
 	$exclude = $method === "exclusive" ? $fixed_to_top : array_merge($fixed_to_top, $items);
 	$include = $method === "inclusive" ? array_diff($items, $fixed_to_top) : array_diff($items, $fixed_to_top);
 
-	$include_fixed = $method === "exclusive" ? array_intersect($items, $fixed_to_top) : array_diff($fixed_to_top, $items);
+	$include_fixed = $method === "exclusive" ? array_unique(array_merge($items, $fixed_to_top)) : array_diff($fixed_to_top, $items);
 
 	// Generate Filters
 	$tax_query = ['relation' => 'OR', 'include_children' => false];
@@ -92,6 +93,17 @@ function ast_get_content_input_query($attributes, $var_name = "content")
 
 	$posts = array_merge($fixed_posts, $remaining_posts);
 	$posts = $limit === 0 ? $posts : array_slice($posts, 0, $limit);
+
+	$posts = array_map(
+		function ($post) {
+			if (function_exists('get_fields')) {
+				$post->acf = get_fields($post->ID);
+			}
+			return $post;
+		},
+		$posts
+	);
+	
 	return $posts;
 }
 
@@ -116,7 +128,16 @@ add_action('rest_api_init', function () {
 			$posts = array_map(
 				function ($post) use ($rest_controllers, $request) {
 					$controller = $rest_controllers[$post->post_type];
-					return $controller->prepare_item_for_response($post, $request)->data;
+					$result = $controller->prepare_item_for_response($post, $request)->data;
+
+					// Add support for ACF fields
+					if (function_exists('get_fields')) {
+						$acf = get_fields($post->ID);
+						if (isset($post)) {
+							$result['acf'] = $acf;
+						}
+					}
+					return $result;
 				},
 				$posts
 			);

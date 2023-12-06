@@ -27,7 +27,7 @@ import {
 } from "@wordpress/components";
 import { BlockControls } from "@wordpress/block-editor";
 import { select } from "@wordpress/data";
-import { chevronUp, chevronDown, unseen, seen, pin, edit, close, blockMeta, plus } from "@wordpress/icons";
+import { chevronUp, chevronDown, unseen, seen, pin, edit, check, close, blockMeta, plus } from "@wordpress/icons";
 import apiFetch from "@wordpress/api-fetch";
 import { addQueryArgs } from "@wordpress/url";
 import { useFocusManager } from "../FocusManager/FocusManager";
@@ -66,8 +66,8 @@ interface ContentInputProps {
 	allowed?: Features[];
 	/** The current ContentQuery value */
   value?: ContentQuery;
-	/** If true, only one post type can be selected */
-	single?: boolean;
+	/** If true, the UI focus will be on selecting content directly opposed to building a query */
+	picker?: boolean;
   /** The children to render, which will also provide a context in which
    *  the result of the query can be accessed.
    */
@@ -78,6 +78,8 @@ interface ContentInputProps {
 	useSlot?: string;
 	/** If true, the button will show in the block toolbar */
 	useBlockToolbar?: boolean;
+	/** Extra columns to display */
+	extraColumns?: string[];
   /** Called when the query has updated. */
   onValueChange?: (value: ContentQuery) => void;
 	/** Additional props will be handed down */
@@ -94,13 +96,15 @@ const _ContentInput = ({
 	useEditorToolbar = true,
 	fixedValue,
   value,
-	single = true,
+	extraColumns = [],
   children,
 	allowed = undefined,
+	picker = false,
   onValueChange,
   ...props
 }: ContentInputProps) => {
   const [queryPreview, setQueryPreview] = useState<any>([]);
+  const [queryRender, setQueryRender] = useState<any>([]);
 	const [showEditor, setShowEditor] = useState(false);
 	const [search, setSearch] = useState('');
 	const [searchRaw, setSearchRaw] = useState<string>('');
@@ -123,7 +127,7 @@ const _ContentInput = ({
 
   const query = useMemo(
     () => ({
-      method: "inclusive" as const,
+      method: picker ? "exclusive" as const : "inclusive" as const,
       order: "newest" as const,
       limit: 0,
       filters: [],
@@ -160,9 +164,9 @@ const _ContentInput = ({
 	}, []);
 
   //Run the query and get the results
-	const runQuery = (search: string | undefined = undefined) => {
+	const runQuery = (search: string | undefined = undefined, mods: object = {}) => {
 		const args = {
-			...query,
+			...{...query, ...mods},
 			...(search ? { search } : {}),
 		};
 
@@ -174,9 +178,13 @@ const _ContentInput = ({
 
   useEffect(() => {
 		(async () => {
-			let queryPreview: any[] = await runQuery(search)
+			let queryPreview: any[] = await runQuery(search, { method: "inclusive", isolated: []  })
 			if (!queryPreview) return;
 			setQueryPreview(queryPreview);
+
+			let queryRender = await runQuery();
+			if (!queryRender) return;
+			setQueryRender(queryRender);
 		})();
   }, [postTypes, query.order, query.postType, query.filters, search]);
 
@@ -248,109 +256,138 @@ const _ContentInput = ({
 
       {showEditor && (
         <Modal
-          isFullScreen
-          onRequestClose={() => { setShowEditor(false), setSearch(''); }}
-          title="Query Editor"
-          className="content-input-modal"
+          isFullScreen={!picker}
+          onRequestClose={() => {
+            setShowEditor(false), setSearch("");
+          }}
+          title={picker ? "Content Picker" : "Query Editor"}
+          className={
+            picker
+              ? "content-input-modal content-input-modal--picker"
+              : "content-input-modal"
+          }
         >
           <Panel>
-            <PanelBody title="Basic Settings">
-              {!fixedValue?.postType && (
-                <PanelRow>
-									{single ? (
-										<SelectControl
-											value={query?.postType?.[0]}
-											onChange={(value) =>
-												setQuery({ ...query, postType: [value] })
-											}
-											options={postTypes.map((postType: any) => ({
-												label: postType.name,
-												value: postType.slug,
-											}))}
-											label="Post Type"
-										/>
-									) : (
-										<FormTokenField
-											value={query?.postType}
-											onChange={(value) =>
-												setQuery({ ...query, postType: value as string[] })
-											}
-											suggestions={postTypes.map((postType: any) => (postType.slug))}
-											label="Post Type"
-										/>
-									)}
-                </PanelRow>
-              )}
-              {!fixedValue?.order && (
-                <PanelRow>
-                  <SelectControl
-                    value={query?.order}
-                    // @ts-ignore
-                    onChange={(value) => setQuery({ ...query, order: value })}
-                    options={[
-                      { label: "Newest to Oldest", value: "newest" },
-                      { label: "Oldest to Newest", value: "oldest" },
-                      { label: "A -> Z", value: "az" },
-                      { label: "Z -> A", value: "za" },
-                      { label: "Random", value: "random" },
-                      // TODO: Add custom ordering by field
-                    ]}
-                    label="Order By"
-                  />
-                </PanelRow>
-              )}
-              {!fixedValue?.method && (
-                <PanelRow>
-                  <SelectControl
-                    value={query?.method}
-                    // @ts-ignore
-                    onChange={(value) => setQuery({ ...query, method: value })}
-                    options={[
-                      { label: "Exclusive", value: "exclusive" },
-                      { label: "Inclusive", value: "inclusive" },
-                    ]}
-                    help="Exclusive will only show posts that have been flagged to be included. Inclusive will show all posts that haven't explicitly been excluded."
-                    label="Query Mode"
-                  />
-                </PanelRow>
-              )}
-              {!fixedValue?.limit && (
-                <PanelRow>
-                  <NumberControl
-                    value={query?.limit}
-                    onChange={(value) =>
-                      setQuery({ ...query, limit: parseInt(value || "0") })
-                    }
-                    label="Limit"
-                    min={0}
-                    max={100}
-                    help="Limits the total number of items; use 0 for no limit."
-                  />
-                </PanelRow>
-              )}
-            </PanelBody>
-            {allows("filters") && (
+            {!fixedValue?.postType && !picker && (
+              <PanelBody title="Basic Settings">
+                {!fixedValue?.postType && (
+                  <PanelRow>
+                    {picker ? (
+                      <SelectControl
+                        value={query?.postType?.[0]}
+                        onChange={(value) =>
+                          setQuery({ ...query, postType: [value] })
+                        }
+                        options={postTypes.map((postType: any) => ({
+                          label: postType.name,
+                          value: postType.slug,
+                        }))}
+                        label="Post Type"
+                      />
+                    ) : (
+                      <FormTokenField
+                        value={query?.postType}
+                        onChange={(value) =>
+                          setQuery({ ...query, postType: value as string[] })
+                        }
+                        suggestions={postTypes.map(
+                          (postType: any) => postType.slug
+                        )}
+                        label="Post Type"
+                      />
+                    )}
+                  </PanelRow>
+                )}
+                {!fixedValue?.order && !picker && (
+                  <PanelRow>
+                    <SelectControl
+                      value={query?.order}
+                      // @ts-ignore
+                      onChange={(value) => setQuery({ ...query, order: value })}
+                      options={[
+                        { label: "Newest to Oldest", value: "newest" },
+                        { label: "Oldest to Newest", value: "oldest" },
+                        { label: "A -> Z", value: "az" },
+                        { label: "Z -> A", value: "za" },
+                        { label: "Random", value: "random" },
+                        // TODO: Add custom ordering by field
+                      ]}
+                      label="Order By"
+                    />
+                  </PanelRow>
+                )}
+                {!fixedValue?.method && !picker && (
+                  <PanelRow>
+                    <SelectControl
+                      value={query?.method}
+                      // @ts-ignore
+                      onChange={(value) =>
+                        setQuery({ ...query, method: value })
+                      }
+                      options={[
+                        { label: "Exclusive", value: "exclusive" },
+                        { label: "Inclusive", value: "inclusive" },
+                      ]}
+                      help="Exclusive will only show posts that have been flagged to be included. Inclusive will show all posts that haven't explicitly been excluded."
+                      label="Query Mode"
+                    />
+                  </PanelRow>
+                )}
+                {!fixedValue?.limit && (
+                  <PanelRow>
+                    <NumberControl
+                      value={query?.limit}
+                      onChange={(value) =>
+                        setQuery({ ...query, limit: parseInt(value || "0") })
+                      }
+                      label="Limit"
+                      min={0}
+                      max={100}
+                      help="Limits the total number of items; use 0 for no limit."
+                    />
+                  </PanelRow>
+                )}
+              </PanelBody>
+            )}
+            {allows("filters") && !picker && (
               <Filters
                 postTypes={query.postType}
                 filters={query.filters}
                 onChange={(filters) => setQuery({ ...query, filters })}
               />
             )}
-            <PanelBody title={`Results (${queryPreview.length})`}>
+            <PanelBody
+              title={picker ? undefined : `Results (${queryPreview.length})`}
+            >
               <PanelRow>
                 <TextControl
-                  label="Filter Results"
+                  label={picker ? `Find Content` : `Filter Results`}
                   value={searchRaw}
-                  help="Filters the result table to help find a specific entry; does not affect the query."
+                  help={
+                    picker
+                      ? undefined
+                      : "Filters the result table to help find a specific entry; does not affect the query."
+                  }
                   onChange={setSearchRaw}
                 />
               </PanelRow>
               <PanelRow>
-                <table className="results" style={{ width: "100%" }}>
+                <table
+                  className="results"
+                  style={{
+                    width: "100%",
+                    gridTemplateColumns: `auto 1fr ${extraColumns.map(
+                      () => "1fr"
+                    )} auto`,
+                  }}
+                >
                   <thead>
                     <tr>
                       <th>Type</th>
                       <th>Title</th>
+                      {extraColumns.map((it) => (
+                        <th>{it}</th>
+                      ))}
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -360,12 +397,18 @@ const _ContentInput = ({
                         key={it.id}
                         className={(query.limit || 100) < index + 1 ? "" : ""}
                       >
-                        <td>{postTypes.find(type => it.type === type.slug)?.name || it.slug}</td>
+                        <td>
+                          {postTypes.find((type) => it.type === type.slug)
+                            ?.name || it.slug}
+                        </td>
                         <td
                           dangerouslySetInnerHTML={{
                             __html: it.title.rendered,
                           }}
                         />
+                        {extraColumns.map((col) => (
+                          <td>{it[col] || it.acf?.[col] || ""}</td>
+                        ))}
                         <td>
                           {lockedState(it.id)[2] && [
                             <Button
@@ -381,20 +424,40 @@ const _ContentInput = ({
                               onClick={() => moveItem(index || 0, 1)}
                             />,
                           ]}
-                          <Button
-                            size="small"
-                            onClick={() => toggleIsolation(it.id)}
-                            icon={excludeState(it.id)[1]}
-                            label={`${excludeState(it.id)[0]}`}
-                          />
-                          {allows("pin") && (
-                            <Button
-                              size="small"
-                              icon={pin}
-                              style={{ opacity: lockedState(it.id)[1] }}
-                              label={lockedState(it.id)[0]}
-                              onClick={() => toggleFixed(it.id)}
-                            />
+                          {picker ? (
+                            <>
+                              <Button
+                                size="small"
+                                className="content-input-modal__select"
+                                icon={
+                                  query.fixed?.includes(it.id)
+                                    ? check
+                                    : undefined
+                                }
+                                label="Select"
+                                onClick={() => {
+                                  toggleFixed(it.id);
+                                }}
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                size="small"
+                                onClick={() => toggleIsolation(it.id)}
+                                icon={excludeState(it.id)[1]}
+                                label={`${excludeState(it.id)[0]}`}
+                              />
+                              {allows("pin") && (
+                                <Button
+                                  size="small"
+                                  icon={pin}
+                                  style={{ opacity: lockedState(it.id)[1] }}
+                                  label={lockedState(it.id)[0]}
+                                  onClick={() => toggleFixed(it.id)}
+                                />
+                              )}
+                            </>
                           )}
                         </td>
                       </tr>
@@ -409,10 +472,10 @@ const _ContentInput = ({
       <ContentInputContext.Provider
         value={{
           query,
-          results: queryPreview,
+          results: queryRender,
         }}
       >
-        {children}
+        {typeof children === "function" ? children(queryRender) : children}
       </ContentInputContext.Provider>
     </div>
   );

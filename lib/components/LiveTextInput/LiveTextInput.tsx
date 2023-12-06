@@ -42,7 +42,7 @@ interface LiveTextInputProps {
   onChange: (value: string, url?: Link) => void;
 
 	/** The final rendered output should exist as the child. */
-	children: React.Element;
+	children: React.Element | string;
 
 	/** If you want to use a custom toolbar, you can pass the slot name here. */
   useSlot?: string;
